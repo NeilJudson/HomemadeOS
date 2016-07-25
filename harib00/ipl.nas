@@ -41,7 +41,7 @@ entry:
 		MOV		CH,0			; 柱面0
 		MOV		DH,0			; 磁头0
 		MOV		CL,2			; 扇区2
-
+readloop:
 		MOV		SI,0			; 记录失败次数的寄存器
 retry:
 		MOV		AH,0x02			; AH=0x02 : 读入磁盘
@@ -49,7 +49,7 @@ retry:
 		MOV		BX,0			; ？
 		MOV		DL,0x00			; A驱动器
 		INT		0x13			; 调用磁盘BIOS
-		JNC		fin				; 没出错的话跳转到fin
+		JNC		next			; 没出错的话跳转到next
 		ADD		SI,1			; 往SI加1
 		CMP		SI,5			; 比较SI与5
 		JAE		error			; SI >= 5时，跳转到error
@@ -57,6 +57,13 @@ retry:
 		MOV		DL,0x00			; A驱动器
 		INT		0x13			; 重置驱动器
 		JMP		retry
+next:
+		MOV		AX,ES			; 把内存地址后移0x200
+		ADD		AX,0x0020
+		MOV		ES,AX			; 因为没有ADD ES,0x020指令，所以这里稍微绕个弯
+		ADD		CL,1			; 往CL里加1
+		CMP		CL,18			; 比较CL与18
+		JBE		readloop		; 如果CL <= 18 跳转至readloop
 
 fin:
 		HLT						; 让CPU停止，等待指令
