@@ -1,6 +1,7 @@
 ; FUTURE-ipl
 ; TAB=4
 
+CYLS	EQU		10				; 常数声明
 		ORG		0x7c00			; 指明程序的装载地址
 
 ; 以下这段是标准FAT12格式软盘专用的代码
@@ -46,7 +47,7 @@ readloop:
 retry:
 		MOV		AH,0x02			; AH=0x02 : 读入磁盘
 		MOV		AL,1			; 1个扇区
-		MOV		BX,0			; ？
+		MOV		BX,0			; ES:BX=缓冲地址，校验及寻道时不使用
 		MOV		DL,0x00			; A驱动器
 		INT		0x13			; 调用磁盘BIOS
 		JNC		next			; 没出错的话跳转到next
@@ -64,6 +65,14 @@ next:
 		ADD		CL,1			; 往CL里加1
 		CMP		CL,18			; 比较CL与18
 		JBE		readloop		; 如果CL <= 18 跳转至readloop
+		MOV		CL,1
+		ADD		DH,1
+		CMP		DH,2
+		JB		readloop		; 如果DH < 2 跳转至readloop
+		MOV		DH,0
+		ADD		CH,1
+		CMP		CH,CYLS
+		JB		readloop		; 如果CH < CYLS 跳转至readloop
 
 fin:
 		HLT						; 让CPU停止，等待指令
