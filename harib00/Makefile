@@ -16,14 +16,16 @@ default :
 ipl.bin : ipl.nas Makefile
 	$(NASK) ipl.nas ipl.bin ipl.lst
 
-future.img : ipl.bin Makefile
-	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
-		wbinimg src:ipl.bin len:512 from:0 to:0   imgout:future.img
+future.sys : future.nas Makefile
+	$(NASK) future.nas future.sys future.lst
+
+future.img : ipl.bin future.sys Makefile
+	$(EDIMG) imgin:../z_tools/fdimg0at.tek \
+		wbinimg src:ipl.bin len:512 from:0 to:0  \
+		copy from:future.sys to:@: \
+		imgout:future.img
 
 # ÃüÁî
-
-asm :
-	$(MAKE) ipl.bin
 
 img :
 	$(MAKE) future.img
@@ -40,6 +42,8 @@ install :
 clean :
 	-$(DEL) ipl.bin
 	-$(DEL) ipl.lst
+	-$(DEL) future.sys
+	-$(DEL) future.lst
 
 src_only :
 	$(MAKE) clean

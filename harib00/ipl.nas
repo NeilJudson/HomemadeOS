@@ -2,6 +2,7 @@
 ; TAB=4
 
 CYLS	EQU		10				; 常数声明
+
 		ORG		0x7c00			; 指明程序的装载地址
 
 ; 以下这段是标准FAT12格式软盘专用的代码
@@ -74,9 +75,9 @@ next:
 		CMP		CH,CYLS
 		JB		readloop		; 如果CH < CYLS 跳转至readloop
 
-fin:
-		HLT						; 让CPU停止，等待指令
-		JMP		fin				; 换行
+; 读完haribote.sys后运行
+
+		JMP		0xc200
 
 error:
 		MOV		SI,msg
@@ -89,6 +90,9 @@ putloop:
 		MOV		BX,15			; 指定字符颜色
 		INT		0x10			; 调用显卡BIOS
 		JMP		putloop
+fin:
+		HLT						; 让CPU停止，等待指令
+		JMP		fin				; 无限循环
 msg:
 		DB		0x0a, 0x0a		; 2个换行
 		DB		"load error"
