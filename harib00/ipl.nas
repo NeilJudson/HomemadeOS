@@ -77,6 +77,7 @@ next:
 
 ; 读完haribote.sys后运行
 
+		MOV		[0x0ff0],CH		; 将CYLS的值写到内存地址0x0ff0中，把磁盘装载内容的结束地址告诉给haribote.sys
 		JMP		0xc200
 
 error:
