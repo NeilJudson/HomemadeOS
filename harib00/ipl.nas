@@ -1,4 +1,4 @@
-; FUTURE-ipl
+; future-ipl
 ; TAB=4
 
 CYLS	EQU		10				; ³£ÊıÉùÃ÷
