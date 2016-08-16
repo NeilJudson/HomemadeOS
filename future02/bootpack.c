@@ -26,14 +26,19 @@ void init_screen(char *vram, int x, int y);
 #define COL8_008484 14
 #define COL8_848484 15
 
+struct BOOTINFO {
+	char cyls, leds, vmode, reserve;
+	short scrnx, scrny;
+	char *vram;
+};
+
 void HariMain(void)
 {
-	int *binfo_vram = (int *) 0x0ff8;
-	short *binfo_scrnx = (short *) 0x0ff4;
-	short *binfo_scrny = (short *) 0x0ff6;
-	char *vram = (char *) *binfo_vram;
-	int xsize = *binfo_scrnx;
-	int ysize = *binfo_scrny;
+	struct BOOTINFO *binfo;
+	binfo = (struct BOOTINFO *) 0x0ff0;
+	char *vram = binfo->vram;
+	int xsize = binfo->scrnx;
+	int ysize = binfo->scrny;
 
 	init_palette();
 
