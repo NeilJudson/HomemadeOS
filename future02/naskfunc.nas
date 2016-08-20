@@ -11,6 +11,7 @@
 		GLOBAL	_io_in8,  _io_in16,  _io_in32
 		GLOBAL	_io_out8, _io_out16, _io_out32
 		GLOBAL	_io_load_eflags, _io_store_eflags
+		GLOBAL	_load_gdtr, _load_idtr
 
 [SECTION .text]	; 目标文件中写了这些之后再写程序
 
@@ -91,3 +92,17 @@ _io_store_eflags:	; void io_store_eflags(int eflags);
 		PUSH	EAX
 		POPFD		; 指POP EFLAGS，按双字长将标志位从栈弹出到标志寄存器
 		RET			; 返回EAX中的值
+
+
+
+_load_gdtr:		; void load_gdtr(int limit, int addr);
+		MOV		AX,[ESP+4]		; limit
+		MOV		[ESP+6],AX		; 小端字节序
+		LGDT	[ESP+6]			; 将16位限制（6 字节数据操作数的2个低位字节）与32位基址（数据操作数的4个高位字节）加载到寄存器
+		RET
+
+_load_idtr:		; void load_idtr(int limit, int addr);
+		MOV		AX,[ESP+4]		; limit
+		MOV		[ESP+6],AX
+		LIDT	[ESP+6]
+		RET

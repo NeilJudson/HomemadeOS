@@ -1,7 +1,7 @@
 ; future-os boot asm
 ; TAB=4
 
-BOTPAK	EQU		0x00280000		; bootpackのロード先
+BOTPAK	EQU		0x00280000		; bootpack
 DSKCAC	EQU		0x00100000		; 磁盘缓存的地方
 DSKCAC0	EQU		0x00008000		; 磁盘缓存的地方（真实模式）
 
