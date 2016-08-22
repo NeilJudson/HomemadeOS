@@ -31,11 +31,11 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, i
 	ar:		访问权限
 	*/
 	if (limit > 0xfffff) {
-		ar |= 0x8000; /* G_bit = 1 */
+		ar |= 0x8000; // Gbit标志位为1，limit的单位为页，1页指4KB
 		limit /= 0x1000;
 	}
 	sd->limit_low    = limit & 0xffff;
-	sd->limit_high   = ((limit >> 16) & 0x0f) | ((ar >> 8) & 0xf0);
+	sd->limit_high   = ((limit >> 16) & 0x0f) | ((ar >> 8) & 0xf0); // 段属性高4位写入limit_high的高4位
 	sd->base_low     = base & 0xffff;
 	sd->base_mid     = (base >> 16) & 0xff;
 	sd->base_high    = (base >> 24) & 0xff;
