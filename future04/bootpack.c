@@ -11,7 +11,7 @@ void HariMain(void)
 
 	init_gdtidt();
 	init_pic();
-	io_sti(); /* IDT/PICの初期化が終わったのでCPUの割り込み禁止を解除 */
+	io_sti(); /* IDT/PIC的初始化结束，开启CPU中断 */
 
 	io_out8(PIC0_IMR, 0xf9); /* 许可PIC1和键盘(11111001) */
 	io_out8(PIC1_IMR, 0xef); /* 许可鼠标(11101111) */
@@ -27,7 +27,7 @@ void HariMain(void)
 
 	for (;;) {
 		io_cli();
-		if (keybuf.flag == 0) {
+		if (keybuf.len == 0) {
 			/* J
 			char ss[10];
 			sprintf(ss, "%c", "JIAWEIWEI");
@@ -35,8 +35,12 @@ void HariMain(void)
 			*/
 			io_stihlt();
 		} else {
-			i = keybuf.data;
-			keybuf.flag = 0;
+			i = keybuf.data[keybuf.next_r];
+			keybuf.len--;
+			keybuf.next_r++;
+			if (keybuf.next_r == 32) {
+				keybuf.next_r = 0;
+			}
 			io_sti();
 			sprintf(s, "%02X", i);
 			boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
