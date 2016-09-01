@@ -1,4 +1,5 @@
-OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj \
+		int.obj fifo.obj
 
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/haribote/
@@ -49,7 +50,7 @@ future.sys : asmhead.bin bootpack.hrb Makefile
 
 future.img : ipl.bin future.sys Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek \
-		wbinimg src:ipl.bin len:512 from:0 to:0  \
+		wbinimg src:ipl.bin len:512 from:0 to:0 \
 		copy from:future.sys to:@: \
 		imgout:future.img
 
