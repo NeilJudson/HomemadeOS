@@ -23,8 +23,6 @@ _io_hlt:	; void io_hlt(void);
 		HLT
 		RET
 
-
-
 ; 将中断许可标志置为0，禁止中断
 _io_cli:	; void io_cli(void);
 		CLI
@@ -34,19 +32,17 @@ _io_sti:	; void io_sti(void);
 		STI
 		RET
 
-
-
 _io_stihlt:	; void io_stihlt(void);
 		STI
 		HLT
 		RET
 
-
+;; 从指定装置读取数据的函数
 
 _io_in8:	; int io_in8(int port);
 		MOV		EDX,[ESP+4]		; port
 		MOV		EAX,0
-		IN		AL,DX
+		IN		AL,DX			; 返回值默认都在AX中
 		RET
 
 _io_in16:	; int io_in16(int port);
@@ -60,7 +56,7 @@ _io_in32:	; int io_in32(int port);
 		IN		EAX,DX
 		RET
 
-; 往指定装置里传送数据的函数
+;; 往指定装置里传送数据的函数
 
 _io_out8:	; void io_out8(int port, int data);
 		MOV		EDX,[ESP+4]		; port
