@@ -1,14 +1,14 @@
 #include "bootpack.h"
 #include <stdio.h>
 
-extern struct FIFO8 keyfifo;
+extern struct FIFO8 keyfifo, mousefifo;
 void enable_mouse(void);
 void init_keyboard(void);
 
 void HariMain(void)
 {
 	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	char s[40], mcursor[256], keybuf[32];
+	char s[40], mcursor[256], keybuf[32], mousebuf[128];
 	int mx, my, i;
 
 	init_gdtidt();
@@ -16,6 +16,7 @@ void HariMain(void)
 	io_sti(); /* IDT/PIC的初始化结束，开启CPU中断 */
 
 	fifo8_init(&keyfifo, 32, keybuf);
+	fifo8_init(&mousefifo, 128, mousebuf);
 	io_out8(PIC0_IMR, 0xf9); /* 许可PIC1和键盘(11111001) */
 	io_out8(PIC1_IMR, 0xef); /* 许可鼠标(11101111) */
 
@@ -34,19 +35,25 @@ void HariMain(void)
 
 	for (;;) {
 		io_cli();
-		if (fifo8_status(&keyfifo) == 0) {
+		if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0) {
 			/* J
 			char ss[10];
 			sprintf(ss, "%c", "J");
 			putfonts8_asc(binfo->vram, binfo->scrnx, 100, 100, COL8_FFFFFF, ss);
 			*/
 			io_stihlt();
-		} else {
+		} else if (fifo8_status(&keyfifo) != 0) {
 			i = fifo8_get(&keyfifo);
 			io_sti();
 			sprintf(s, "%02X", i);
 			boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
 			putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+		} else if (fifo8_status(&mousefifo) != 0) {
+			i = fifo8_get(&mousefifo);
+			io_sti();
+			sprintf(s, "%02X", i);
+			boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 47, 31);
+			putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
 		}
 	}
 }
