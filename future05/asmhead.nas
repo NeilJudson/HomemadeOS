@@ -31,17 +31,17 @@ VRAM	EQU		0x0ff8			; 存放图像缓冲区的开始地址
 		INT		0x16 			; keyboard BIOS
 		MOV		[LEDS],AL
 
-; PICが一切の割り込みを受け付けないようにする
-;	AT互換機の仕様では、PICの初期化をするなら、
-;	こいつをCLI前にやっておかないと、たまにハングアップする
-;	PICの初期化はあとでやる
+; PIC关闭一切中断
+;	根据AT兼容机的规格，如果要初始化PIC，
+;	必须在CLI之前进行，否则有时会挂起。
+;	随后进行PIC的初始化
 
 		MOV		AL,0xff
 		OUT		0x21,AL
-		NOP						; OUT命令を連続させるとうまくいかない機種があるらしいので
+		NOP						; 如果连续执行OUT指令，有些机种会无法正常运行
 		OUT		0xa1,AL
 
-		CLI						; さらにCPUレベルでも割り込み禁止
+		CLI						; 禁止CPU级别的中断
 
 ; CPUから1MB以上のメモリにアクセスできるように、A20GATEを設定
 
