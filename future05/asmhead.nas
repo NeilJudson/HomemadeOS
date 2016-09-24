@@ -43,7 +43,7 @@ VRAM	EQU		0x0ff8			; 存放图像缓冲区的开始地址
 
 		CLI						; 禁止CPU级别的中断
 
-; CPUから1MB以上のメモリにアクセスできるように、A20GATEを設定
+; 为了让CPU能够访问1MB以上的内存空间，设定A20GATE
 
 		CALL	waitkbdout
 		MOV		AL,0xd1
@@ -53,72 +53,71 @@ VRAM	EQU		0x0ff8			; 存放图像缓冲区的开始地址
 		OUT		0x60,AL
 		CALL	waitkbdout
 
-; プロテクトモード移行
+; 切换到保护模式
 
-[INSTRSET "i486p"]				; 486の命令まで使いたいという記述
+[INSTRSET "i486p"]				; “想要使用486指令”的叙述
 
-		LGDT	[GDTR0]			; 暫定GDTを設定
+		LGDT	[GDTR0]			; 设定临时GDT
 		MOV		EAX,CR0
-		AND		EAX,0x7fffffff	; bit31を0にする（ページング禁止のため）
-		OR		EAX,0x00000001	; bit0を1にする（プロテクトモード移行のため）
+		AND		EAX,0x7fffffff	; 设bit31为0，为了禁止分页
+		OR		EAX,0x00000001	; 设bit0为1，为了切换到保护模式
 		MOV		CR0,EAX
 		JMP		pipelineflush
 pipelineflush:
-		MOV		AX,1*8			;  読み書き可能セグメント32bit
+		MOV		AX,1*8			; 可读写的段 32bit
 		MOV		DS,AX
 		MOV		ES,AX
 		MOV		FS,AX
 		MOV		GS,AX
 		MOV		SS,AX
 
-; bootpackの転送
+; bootpack的传送
 
-		MOV		ESI,bootpack	; 転送元
-		MOV		EDI,BOTPAK		; 転送先
+		MOV		ESI,bootpack	; 转送源
+		MOV		EDI,BOTPAK		; 转送目的地
 		MOV		ECX,512*1024/4
 		CALL	memcpy
 
-; ついでにディスクデータも本来の位置へ転送
+; 磁盘数据最终转送到它本来的位置去
 
-; まずはブートセクタから
-
-		MOV		ESI,0x7c00		; 転送元
-		MOV		EDI,DSKCAC		; 転送先
+; 将启动扇区复制到1MB后的内存区
+		MOV		ESI,0x7c00		; 转送源
+		MOV		EDI,DSKCAC		; 转送目的地
 		MOV		ECX,512/4
 		CALL	memcpy
-
-; 残り全部
-
-		MOV		ESI,DSKCAC0+512	; 転送元
-		MOV		EDI,DSKCAC+512	; 転送先
+; 所有剩下的
+		MOV		ESI,DSKCAC0+512	; 转送源
+		MOV		EDI,DSKCAC+512	; 转送目的地
 		MOV		ECX,0
 		MOV		CL,BYTE [CYLS]
-		IMUL	ECX,512*18*2/4	; シリンダ数からバイト数/4に変換
-		SUB		ECX,512/4		; IPLの分だけ差し引く
+		IMUL	ECX,512*18*2/4	; 从柱面数变换为字节数/4
+		SUB		ECX,512/4		; 减去IPL
 		CALL	memcpy
 
-; asmheadでしなければいけないことは全部し終わったので、
-;	あとはbootpackに任せる
+; 必须由asmhead来完成的工作，至此全部完毕，以后就交由bootpack来完成
 
-; bootpackの起動
-
-		MOV		EBX,BOTPAK
+; bootpack的启动
+; 将bootpack.hrb第0x10c8字节开始的0x11a8字节复制到0x00310000号地址去
+		MOV		EBX,BOTPAK		; 0x280000
 		MOV		ECX,[EBX+16]
 		ADD		ECX,3			; ECX += 3;
 		SHR		ECX,2			; ECX /= 4;
-		JZ		skip			; 転送するべきものがない
-		MOV		ESI,[EBX+20]	; 転送元
+		JZ		skip			; 没有要转送的东西时
+		MOV		ESI,[EBX+20]	; 转送源
 		ADD		ESI,EBX
-		MOV		EDI,[EBX+12]	; 転送先
+		MOV		EDI,[EBX+12]	; 转送目的地
 		CALL	memcpy
 skip:
-		MOV		ESP,[EBX+12]	; スタック初期値
-		JMP		DWORD 2*8:0x0000001b
+		MOV		ESP,[EBX+12]	; 栈初始值
+		JMP		DWORD 2*8:0x0000001b; J: 这条指令在向EIP存入0x1b的同时，将CS置为2*8（=16）。像这样在JMP目标地址中带冒号（:）的，就是far模式的JMP指令。
+
+
 
 waitkbdout:
-		IN		 AL,0x64
-		AND		 AL,0x02
-		JNZ		waitkbdout		; ANDの結果が0でなければwaitkbdoutへ
+		IN		AL,0x64
+		AND		AL,0x02
+		IN		AL,0x60			; 空读，为了清空数据接收缓冲中的垃圾数据
+		JNZ		waitkbdout		; AND结果如果不是0，就跳转到waitkbdout
 		RET
 
 memcpy:
@@ -127,15 +126,17 @@ memcpy:
 		MOV		[EDI],EAX
 		ADD		EDI,4
 		SUB		ECX,1
-		JNZ		memcpy			; 引き算した結果が0でなければmemcpyへ
+		JNZ		memcpy			; 减法运算结果如果不为0就跳转到memcpy
 		RET
 ; memcpyはアドレスサイズプリフィクスを入れ忘れなければ、ストリング命令でも書ける
 
+
+
 		ALIGNB	16
 GDT0:
-		RESB	8				; ヌルセレクタ
-		DW		0xffff,0x0000,0x9200,0x00cf	; 読み書き可能セグメント32bit
-		DW		0xffff,0x0000,0x9a28,0x0047	; 実行可能セグメント32bit（bootpack用）
+		RESB	8							; NULL sector
+		DW		0xffff,0x0000,0x9200,0x00cf	; 可以读写的段（segment）32bit
+		DW		0xffff,0x0000,0x9a28,0x0047	; 可以执行的段（segment）32bit（bootpack用）
 
 		DW		0
 GDTR0:

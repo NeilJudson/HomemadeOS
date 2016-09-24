@@ -39,10 +39,10 @@ entry:
 ; 读磁盘
 
 		MOV		AX,0x0820
-		MOV		ES,AX
+		MOV		ES,AX			; 内存地址0x08200
 		MOV		CH,0			; 柱面0
 		MOV		DH,0			; 磁头0
-		MOV		CL,2			; 扇区2
+		MOV		CL,2			; 扇区2,从2开始，应为1扇区即为此IPL
 readloop:
 		MOV		SI,0			; 记录失败次数的寄存器
 retry:
