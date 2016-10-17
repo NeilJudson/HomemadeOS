@@ -22,23 +22,22 @@ void init_palette(void)
 	};
 	set_palette(0, 15, table_rgb);
 	return;
-
 	/* C语言中的static char语句只能用于数据，相当于汇编中的DB指令 */
 }
 
 void set_palette(int start, int end, unsigned char *rgb)
 {
 	int i, eflags;
-	eflags = io_load_eflags();	/* 记录中断许可标志的值 */
-	io_cli(); 					/* 将中断许可标志置为0，禁止中断 */
-	io_out8(0x03c8, start);		/* 将想要设定的调色板号码写入0x03c8 */
+	eflags = io_load_eflags();							/* 记录中断许可标志的值 */
+	io_cli();											/* 将中断许可标志置为0，禁止中断 */
+	io_out8(0x03c8, start);								/* 将想要设定的调色板号码写入0x03c8 */
 	for (i = start; i <= end; i++) {
 		io_out8(0x03c9, rgb[0] / 4);
 		io_out8(0x03c9, rgb[1] / 4);
 		io_out8(0x03c9, rgb[2] / 4);
 		rgb += 3;
 	}
-	io_store_eflags(eflags);	/* 复原中断许可标志 */
+	io_store_eflags(eflags);							/* 复原中断许可标志 */
 	return;
 }
 
@@ -102,7 +101,8 @@ void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s
 	return;
 }
 
-void init_mouse_cursor8(char *mouse, char bc)
+/* 准备鼠标指针（16*16） */
+void init_mouse_cursor8(char *mouse, char bc)			// bc：背景色
 {
 	static char cursor[16][16] = {
 		"**************..",

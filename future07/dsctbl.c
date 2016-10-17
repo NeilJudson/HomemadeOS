@@ -36,7 +36,7 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, i
 	ar:		访问权限
 	*/
 	if (limit > 0xfffff) {
-		ar |= 0x8000; // Gbit标志位为1，limit的单位为页，1页指4KB
+		ar |= 0x8000;									// Gbit标志位为1，limit的单位为页，1页指4KB
 		limit /= 0x1000;
 	}
 	sd->limit_low    = limit & 0xffff;

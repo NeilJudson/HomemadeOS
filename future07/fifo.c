@@ -1,16 +1,16 @@
 #include "bootpack.h"
 
-#define FLAGS_OVERRUN		0x0001
+#define FLAGS_OVERRUN	0x0001
 
 /* 初始化FIFO缓冲区 */
 void fifo8_init(struct FIFO8 *fifo, int size, unsigned char *buf)
 {
 	fifo->size = size;
 	fifo->buf = buf;
-	fifo->free = size; /* 缓冲区的大小 */
+	fifo->free = size;									/* 缓冲区的大小 */
 	fifo->flags = 0;
-	fifo->p = 0; /* 下一个数据写入位置 */
-	fifo->q = 0; /* 下一个数据读出位置 */
+	fifo->p = 0;										/* 下一个数据写入位置 */
+	fifo->q = 0;										/* 下一个数据读出位置 */
 	return;
 }
 

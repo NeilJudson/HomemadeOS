@@ -46,22 +46,22 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font);
 void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s);
 void init_mouse_cursor8(char *mouse, char bc);
 void putblock8_8(char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
-#define COL8_000000 0
-#define COL8_FF0000 1
-#define COL8_00FF00 2
-#define COL8_FFFF00 3
-#define COL8_0000FF 4
-#define COL8_FF00FF 5
-#define COL8_00FFFF 6
-#define COL8_FFFFFF 7
-#define COL8_C6C6C6 8
-#define COL8_840000 9
-#define COL8_008400 10
-#define COL8_848400 11
-#define COL8_000084 12
-#define COL8_840084 13
-#define COL8_008484 14
-#define COL8_848484 15
+#define COL8_000000		0
+#define COL8_FF0000		1
+#define COL8_00FF00		2
+#define COL8_FFFF00		3
+#define COL8_0000FF		4
+#define COL8_FF00FF		5
+#define COL8_00FFFF		6
+#define COL8_FFFFFF		7
+#define COL8_C6C6C6		8
+#define COL8_840000		9
+#define COL8_008400		10
+#define COL8_848400		11
+#define COL8_000084		12
+#define COL8_840084		13
+#define COL8_008484		14
+#define COL8_848484		15
 
 /* dsctbl.c */
 struct SEGMENT_DESCRIPTOR {
@@ -122,8 +122,8 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 extern struct FIFO8 mousefifo;
 
 /* memory.c */
-#define MEMMAN_FREES		4090						/* 大约32KB */
-#define MEMMAN_ADDR			0x003c0000
+#define MEMMAN_FREES	4090							/* 大约32KB */
+#define MEMMAN_ADDR		0x003c0000
 struct FREEINFO {										/* 可用信息 */
 	unsigned int addr, size;
 };
@@ -138,3 +138,23 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size);
 int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size);
 unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
 int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
+
+/* sheet.c */
+#define MAX_SHEETS		256
+struct SHEET {
+	unsigned char *buf;
+	int bxsize, bysize, vx0, vy0, col_inv, height, flags;/* col_inv：透明色色号，height：图层高度，flags：图层设定信息 */
+};
+struct SHTCTL {
+	unsigned char *vram;
+	int xsize, ysize, top;								/* top：最上面图层的高度 */
+	struct SHEET *sheets[MAX_SHEETS];					/* 记忆地址变量 */
+	struct SHEET sheets0[MAX_SHEETS];					/* 存放准备的256个图层的信息 */
+};
+struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram, int xsize, int ysize);
+struct SHEET *sheet_alloc(struct SHTCTL *ctl);
+void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
+void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
+void sheet_refresh(struct SHTCTL *ctl);
+void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0);
+void sheet_free(struct SHTCTL *ctl, struct SHEET *sht);
