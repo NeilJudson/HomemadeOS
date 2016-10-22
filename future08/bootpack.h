@@ -147,7 +147,7 @@ struct SHEET {
 	struct SHTCTL *ctl;
 };
 struct SHTCTL {
-	unsigned char *vram;
+	unsigned char *vram, *map;
 	int xsize, ysize, top;								/* top：最上面图层的高度 */
 	struct SHEET *sheets[MAX_SHEETS];					/* 记忆地址变量 */
 	struct SHEET sheets0[MAX_SHEETS];					/* 存放准备的256个图层的信息 */
