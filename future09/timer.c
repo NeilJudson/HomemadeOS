@@ -1,9 +1,10 @@
-#include "bootpack.h"
+#include "timer.h"
+#include "int.h"
 
 #define PIT_CTRL	0x0043
 #define PIT_CNT0	0x0040
 
-struct TIMERCTL timerctl;								// 这声明似乎是不必要的，但似乎因为编译器、连接器的原因，此处不声明会报link error
+struct TIMERCTL timerctl;
 
 void init_pit(void)
 {

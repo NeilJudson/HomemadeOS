@@ -1,5 +1,10 @@
-#include "bootpack.h"
 #include <stdio.h>
+#include "bootpack.h"
+#include "fifo.h"
+#include "timer.h"
+#include "int.h"
+
+extern struct TIMERCTL timerctl;
 
 void make_window8(unsigned char *buf, int xsize, int ysize, char *title);
 
