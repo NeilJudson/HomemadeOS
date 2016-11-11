@@ -28,7 +28,7 @@ void asm_inthandler27(void);
 void asm_inthandler2c(void);
 unsigned int memtest_sub(unsigned int start, unsigned int end);
 
-/* fifo.c */
+/* fifo.c *//*
 struct FIFO8 {
 	unsigned char *buf;
 	int p, q, size, free, flags;
@@ -37,6 +37,7 @@ void fifo8_init(struct FIFO8 *fifo, int size, unsigned char *buf);
 int fifo8_put(struct FIFO8 *fifo, unsigned char data);
 int fifo8_get(struct FIFO8 *fifo);
 int fifo8_status(struct FIFO8 *fifo);
+*/
 
 /* graphic.c */
 void init_palette(void);
@@ -88,7 +89,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define AR_CODE32_ER	0x409a
 #define AR_INTGATE32	0x008e
 
-/* int.c */
+/* int.c *//*
 void init_pic(void);
 void inthandler27(int *esp);
 #define PIC0_ICW1		0x0020
@@ -161,7 +162,7 @@ void sheet_refresh(struct SHEET *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct SHEET *sht, int vx0, int vy0);
 void sheet_free(struct SHEET *sht);
 
-/* timer.c */
+/* timer.c *//*
 struct TIMERCTL {
 	unsigned int count;
 	unsigned int timeout;
@@ -172,3 +173,4 @@ extern struct TIMERCTL timerctl;
 void init_pit(void);
 void inthandler20(int *esp);
 void settimer(unsigned int timeout, struct FIFO8 *fifo, unsigned char data);
+*/
