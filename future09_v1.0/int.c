@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include "int.h"
 #include "bootpack.h"
+#include <stdio.h>
 
 /* PIC≥ı ºªØ */
 void init_pic(void)
