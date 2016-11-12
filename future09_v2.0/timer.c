@@ -1,4 +1,5 @@
 #include "timer.h"
+#include "naskfunc.h"
 #include "int.h"
 
 #define PIT_CTRL	0x0043

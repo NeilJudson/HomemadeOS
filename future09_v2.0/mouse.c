@@ -1,6 +1,8 @@
-#include "bootpack.h"
+#include "mouse.h"
+#include "naskfunc.h"
 #include "fifo.h"
 #include "int.h"
+#include "keyboard.h"
 
 struct FIFO8 mousefifo;
 

@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include "bootpack.h"
+#include "naskfunc.h"
 #include "fifo.h"
-#include "timer.h"
+#include "graphic.h"
+#include "dsctbl.h"
 #include "int.h"
-
-extern struct TIMERCTL timerctl;
+#include "keyboard.h"
+#include "mouse.h"
+#include "memory.h"
+#include "sheet.h"
+#include "timer.h"
 
 void make_window8(unsigned char *buf, int xsize, int ysize, char *title);
 

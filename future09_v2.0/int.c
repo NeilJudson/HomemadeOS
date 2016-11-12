@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "int.h"
-#include "bootpack.h"
+#include "naskfunc.h"
 
 /* PIC≥ı ºªØ */
 void init_pic(void)

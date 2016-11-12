@@ -1,4 +1,5 @@
-#include "bootpack.h"
+#include "graphic.h"
+#include "naskfunc.h"
 
 void init_palette(void)
 {
