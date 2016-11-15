@@ -1,10 +1,10 @@
 /* asmhead.nas */
-struct BOOTINFO {										/* 0x0ff0-0x0fff */
-	char cyls;											/* 启动区读硬盘读到何处为止 */
-	char leds;											/* 启动时键盘LED的状态 */
-	char vmode;											/* 显卡模式为多少位彩色 */
+struct BOOTINFO {												/* 0x0ff0-0x0fff */
+	char cyls;													/* 启动区读硬盘读到何处为止 */
+	char leds;													/* 启动时键盘LED的状态 */
+	char vmode;													/* 显卡模式为多少位彩色 */
 	char reserve;
-	short scrnx, scrny;									/* 画面分辨率 */
+	short scrnx, scrny;											/* 画面分辨率 */
 	char *vram;
 };
 #define ADR_BOOTINFO	0x00000ff0
@@ -123,12 +123,12 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 extern struct FIFO8 mousefifo;
 
 /* memory.c */
-#define MEMMAN_FREES	4090							/* 大约32KB */
+#define MEMMAN_FREES	4090									/* 大约32KB */
 #define MEMMAN_ADDR		0x003c0000
-struct FREEINFO {										/* 可用信息 */
+struct FREEINFO {												/* 可用信息 */
 	unsigned int addr, size;
 };
-struct MEMMAN {											/* 内存管理 */
+struct MEMMAN {													/* 内存管理 */
 	int frees, maxfrees, lostsize, losts;
 	struct FREEINFO free[MEMMAN_FREES];
 };
@@ -144,14 +144,14 @@ int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
 #define MAX_SHEETS		256
 struct SHEET {
 	unsigned char *buf;
-	int bxsize, bysize, vx0, vy0, col_inv, height, flags; /* col_inv：透明色色号，height：图层高度，flags：图层设定信息 */
+	int bxsize, bysize, vx0, vy0, col_inv, height, flags; 		/* col_inv：透明色色号，height：图层高度，flags：图层设定信息 */
 	struct SHTCTL *ctl;
 };
 struct SHTCTL {
 	unsigned char *vram, *map;
-	int xsize, ysize, top;								/* top：最上面图层的高度 */
-	struct SHEET *sheets[MAX_SHEETS];					/* 记忆地址变量 */
-	struct SHEET sheets0[MAX_SHEETS];					/* 存放准备的256个图层的信息 */
+	int xsize, ysize, top;										/* top：最上面图层的高度 */
+	struct SHEET *sheets[MAX_SHEETS];							/* 记忆地址变量 */
+	struct SHEET sheets0[MAX_SHEETS];							/* 存放准备的256个图层的信息 */
 };
 struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram, int xsize, int ysize);
 struct SHEET *sheet_alloc(struct SHTCTL *ctl);
@@ -164,13 +164,14 @@ void sheet_free(struct SHEET *sht);
 /* timer.c */
 #define MAX_TIMER		500
 struct TIMER {
-	unsigned int timeout, flags;
+	unsigned int timeout, flags;								// timeout: 结束时刻
 	struct FIFO8 *fifo;
 	unsigned char data;
 };
 struct TIMERCTL {
-	unsigned int count;
-	struct TIMER timer[MAX_TIMER];
+	unsigned int count, next, using;							// next: 记录下一个时刻
+	struct TIMER *timers[MAX_TIMER];
+	struct TIMER timers0[MAX_TIMER];
 };
 extern struct TIMERCTL timerctl;
 void init_pit(void);
