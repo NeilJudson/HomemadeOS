@@ -1,6 +1,4 @@
-#ifndef FIFOH
 #include "fifo.h"
-#endif
 
 #ifndef MOUSEH
 #define MOUSEH

@@ -1,6 +1,4 @@
-#ifndef FIFOH
 #include "fifo.h"
-#endif
 
 #ifndef TIMERH
 #define TIMERH
@@ -8,13 +6,14 @@
 #define MAX_TIMER		500
 
 struct TIMER {
-	unsigned int timeout, flags;
+	unsigned int timeout, flags;								// timeout: 结束时刻
 	struct FIFO8 *fifo;
 	unsigned char data;
 };
 struct TIMERCTL {
-	unsigned int count;
-	struct TIMER timer[MAX_TIMER];
+	unsigned int count, next, using;							// next: 记录下一个时刻
+	struct TIMER *timers[MAX_TIMER];
+	struct TIMER timers0[MAX_TIMER];
 };
 
 extern struct TIMERCTL timerctl;

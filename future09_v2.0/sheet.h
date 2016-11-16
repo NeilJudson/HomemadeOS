@@ -1,6 +1,4 @@
-#ifndef MEMORYH
 #include "memory.h"
-#endif
 
 #ifndef SHEETH
 #define SHEETH
