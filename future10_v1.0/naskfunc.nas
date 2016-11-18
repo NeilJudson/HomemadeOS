@@ -29,11 +29,11 @@ _io_hlt:						; void io_hlt(void);
 
 ; 将中断许可标志置为0，禁止中断
 _io_cli:						; void io_cli(void);
-		CLI
+		CLI						; 将中断标志置为0
 		RET
 
 _io_sti:						; void io_sti(void);
-		STI
+		STI						; 将中断标志置为1
 		RET
 
 _io_stihlt:						; void io_stihlt(void);
