@@ -1,4 +1,5 @@
-#include "bootpack.h"
+#include "dsctbl.h"
+#include "naskfunc.h"
 
 void init_gdtidt(void)
 {
