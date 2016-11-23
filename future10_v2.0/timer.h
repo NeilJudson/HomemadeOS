@@ -7,8 +7,8 @@
 
 struct TIMER {
 	unsigned int timeout, flags;								// timeout: 结束时刻
-	struct FIFO8 *fifo;
-	unsigned char data;
+	struct FIFO32 *fifo;
+	int data;
 };
 struct TIMERCTL {
 	unsigned int count, next, using;							// next: 记录下一个时刻
@@ -21,7 +21,7 @@ extern struct TIMERCTL timerctl;
 void init_pit(void);
 struct TIMER *timer_alloc(void);
 void timer_free(struct TIMER *timer);
-void timer_init(struct TIMER *timer, struct FIFO8 *fifo, unsigned char data);
+void timer_init(struct TIMER *timer, struct FIFO32 *fifo, int data);
 void timer_settime(struct TIMER *timer, unsigned int timeout);
 void inthandler20(int *esp);
 

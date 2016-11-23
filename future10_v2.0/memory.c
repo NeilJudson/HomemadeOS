@@ -11,18 +11,18 @@ unsigned int memtest(unsigned int start, unsigned int end)
 
 	/* 确认CPU是386还是486以上的 */
 	eflg = io_load_eflags();
-	eflg |= EFLAGS_AC_BIT;								/* AC-bit = 1 */
+	eflg |= EFLAGS_AC_BIT;										/* AC-bit = 1 */
 	io_store_eflags(eflg);
 	eflg = io_load_eflags();
-	if ((eflg & EFLAGS_AC_BIT) != 0) {					/* 如果是386，即使设定AC=1，AC的值还会自动回到0 */
+	if ((eflg & EFLAGS_AC_BIT) != 0) {							/* 如果是386，即使设定AC=1，AC的值还会自动回到0 */
 		flg486 = 1;
 	}
-	eflg &= ~EFLAGS_AC_BIT;								/* AC-bit = 0 */
+	eflg &= ~EFLAGS_AC_BIT;										/* AC-bit = 0 */
 	io_store_eflags(eflg);
 
 	if (flg486 != 0) {
 		cr0 = load_cr0();
-		cr0 |= CR0_CACHE_DISABLE;						/* 禁止缓存 */
+		cr0 |= CR0_CACHE_DISABLE;								/* 禁止缓存 */
 		store_cr0(cr0);
 	}
 
@@ -30,7 +30,7 @@ unsigned int memtest(unsigned int start, unsigned int end)
 
 	if (flg486 != 0) {
 		cr0 = load_cr0();
-		cr0 &= ~CR0_CACHE_DISABLE;						/* 允许缓存 */
+		cr0 &= ~CR0_CACHE_DISABLE;								/* 允许缓存 */
 		store_cr0(cr0);
 	}
 
@@ -39,10 +39,10 @@ unsigned int memtest(unsigned int start, unsigned int end)
 
 void memman_init(struct MEMMAN *man)
 {
-	man->frees = 0;										/* 可用信息数目 */
-	man->maxfrees = 0;									/* 用于观察可用状况：frees的最大值 */
-	man->lostsize = 0;									/* 释放失败的内存的大小总和 */
-	man->losts = 0;										/* 释放失败次数 */
+	man->frees = 0;												/* 可用信息数目 */
+	man->maxfrees = 0;											/* 用于观察可用状况：frees的最大值 */
+	man->lostsize = 0;											/* 释放失败的内存的大小总和 */
+	man->losts = 0;												/* 释放失败次数 */
 	return;
 }
 
@@ -70,13 +70,13 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size)
 				/* 如果free[i]变成了0，就减掉一条可用信息 */
 				man->frees--;
 				for (; i < man->frees; i++) {
-					man->free[i] = man->free[i + 1];	/* 代入结构体 */
+					man->free[i] = man->free[i + 1];			/* 代入结构体 */
 				}
 			}
 			return a;
 		}
 	}
-	return 0;											/* 没有可用空间 */
+	return 0;													/* 没有可用空间 */
 }
 
 /* 释放 */
@@ -103,11 +103,11 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 					/* man->free[i]删除，free[i]归纳到前面去 */
 					man->frees--;
 					for (; i < man->frees; i++) {
-						man->free[i] = man->free[i + 1];/* 结构体赋值 */
+						man->free[i] = man->free[i + 1];		/* 结构体赋值 */
 					}
 				}
 			}
-			return 0;									/* 成功完成 */
+			return 0;											/* 成功完成 */
 		}
 	}
 	/* 不能与前面的可用空间归纳到一起 */
@@ -117,7 +117,7 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 			/* 可以与后面的内容归纳到一起 */
 			man->free[i].addr = addr;
 			man->free[i].size += size;
-			return 0;									/* 成功完成 */
+			return 0;											/* 成功完成 */
 		}
 	}
 	/* 既不能与前面归纳到一起，也不能喝后面归纳到一起 */
@@ -128,16 +128,16 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 		}
 		man->frees++;
 		if (man->maxfrees < man->frees) {
-			man->maxfrees = man->frees;					/* 更新最大值 */
+			man->maxfrees = man->frees;							/* 更新最大值 */
 		}
 		man->free[i].addr = addr;
 		man->free[i].size = size;
-		return 0;										/* 成功完成 */
+		return 0;												/* 成功完成 */
 	}
 	/* 不能往后移动 */
 	man->losts++;
 	man->lostsize += size;
-	return -1;											/* 失败 */
+	return -1;													/* 失败 */
 }
 
 unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size)

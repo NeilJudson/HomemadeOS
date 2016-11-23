@@ -8,10 +8,8 @@ struct MOUSE_DEC {
 	int x, y, btn;
 };
 
-extern struct FIFO8 mousefifo;
-
 void inthandler2c(int *esp);
-void enable_mouse(struct MOUSE_DEC *mdec);
+void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 #endif

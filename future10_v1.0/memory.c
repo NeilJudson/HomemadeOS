@@ -40,8 +40,8 @@ void memman_init(struct MEMMAN *man)
 {
 	man->frees = 0;												/* 可用信息数目 */
 	man->maxfrees = 0;											/* 用于观察可用状况：frees的最大值 */
-		man->lostsize = 0;										/* 释放失败的内存的大小总和 */
-		man->losts = 0;											/* 释放失败次数 */
+	man->lostsize = 0;											/* 释放失败的内存的大小总和 */
+	man->losts = 0;												/* 释放失败次数 */
 	return;
 }
 
