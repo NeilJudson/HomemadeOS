@@ -7,10 +7,10 @@ void fifo32_init(struct FIFO32 *fifo, int size, int *buf)
 {
 	fifo->size = size;
 	fifo->buf = buf;
-	fifo->free = size;									/* 缓冲区的大小 */
+	fifo->free = size;											/* 缓冲区的大小 */
 	fifo->flags = 0;
-	fifo->p = 0;										/* 下一个数据写入位置 */
-	fifo->q = 0;										/* 下一个数据读出位置 */
+	fifo->p = 0;												/* 下一个数据写入位置 */
+	fifo->q = 0;												/* 下一个数据读出位置 */
 	return;
 }
 
