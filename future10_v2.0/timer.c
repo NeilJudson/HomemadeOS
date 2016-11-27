@@ -13,15 +13,20 @@ struct TIMERCTL timerctl;
 void init_pit(void)
 {
 	int i;
+	struct TIMER *t;
 	io_out8(PIT_CTRL, 0x34);
 	io_out8(PIT_CNT0, 0x9c);									// 中断周期的低8位
 	io_out8(PIT_CNT0, 0x2e);									// 中断周期的高8位
 	timerctl.count = 0;
-	timerctl.nextTime = 0xffffffff;								/* 因为最初没有正在运行的定时器 */
-	timerctl.using = 0;
 	for (i = 0; i < MAX_TIMER; i++) {
 		timerctl.timers0[i].flags = 0;							/* 未使用 */
 	}
+	t = timer_alloc();											/* 取得一个 */
+	t->timeout = 0xffffffff;
+	t->flags = TIMER_FLAGS_USING;
+	t->nextTimer = 0;											/* 末尾 */
+	timerctl.t0 = t;											/* 因为现在只有哨兵，所以他就在最前面 */
+	timerctl.nextTime = 0xffffffff;								/* 因为只有哨兵，所以下一个超时时刻就是哨兵的时刻 */
 	return;
 }
 
@@ -58,15 +63,6 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 	timer->flags = TIMER_FLAGS_USING;
 	e = io_load_eflags();
 	io_cli();
-	timerctl.using++;
-	if (timerctl.using == 1) {
-		/* 处于运行状态的定时器只有这一个时 */
-		timerctl.t0 = timer;
-		timer->nextTimer = 0;									/* 没有下一个 */
-		timerctl.nextTime = timer->timeout;
-		io_store_eflags(e);
-		return;
-	}
 	t = timerctl.t0;
 	if (timer->timeout <= t->timeout) {
 		/* 插入最前面的情况下 */
@@ -80,9 +76,6 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 	for (;;) {
 		s = t;
 		t = t->nextTimer;
-		if (t == 0) {
-			break;												/* 最后面 */
-		}
 		if (timer->timeout <= t->timeout) {
 			/* 插入到s和t之间时 */
 			s->nextTimer = timer;								/* s的下一个是timer */
@@ -91,16 +84,10 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 			return;
 		}
 	}
-	/* 插入最后面的情况下 */
-	s->nextTimer = timer;
-	timer->nextTimer = 0;
-	io_store_eflags(e);
-	return;
 }
 
 void inthandler20(int *esp)
 {
-	int i;
 	struct TIMER *timer;
 	io_out8(PIC0_OCW2, 0x60);									/* 把IRQ-00信号接收完了的信息通知给PIC */
 	timerctl.count++;
@@ -108,7 +95,7 @@ void inthandler20(int *esp)
 		return;													/* 还不到下一个时刻，所以结束 */
 	}
 	timer = timerctl.t0;										/* 首先把最前面的地址赋给timer */
-	for (i = 0; i < timerctl.using; i++) {
+	for (;;) {
 		/* timers的定时器都处于动作中，所以不确认flags */
 		if (timer->timeout > timerctl.count) {
 			break;
@@ -118,17 +105,9 @@ void inthandler20(int *esp)
 		fifo32_put(timer->fifo, timer->data);
 		timer = timer->nextTimer;								/* 下一定时器的地址赋给timer */
 	}
-	/* 正好有i个定时器超时了。其余的进行移位。 */
-	timerctl.using -= i;
-
 	/* 新移位 */
 	timerctl.t0 = timer;
-
 	/* timerctl.nextTime的设定 */
-	if (timerctl.using > 0) {
-		timerctl.nextTime = timerctl.t0->timeout;
-	} else {
-		timerctl.nextTime = 0xffffffff;
-	}
+	timerctl.nextTime = timer->timeout;
 	return;
 }

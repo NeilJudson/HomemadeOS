@@ -12,7 +12,7 @@ struct TIMER {
 	int data;
 };
 struct TIMERCTL {
-	unsigned int count, nextTime, using;						// nextTime: 记录下一个时刻
+	unsigned int count, nextTime;								// nextTime: 记录下一个时刻
 	struct TIMER *t0;
 	struct TIMER timers0[MAX_TIMER];
 };
