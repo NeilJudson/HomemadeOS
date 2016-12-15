@@ -30,7 +30,7 @@ void HariMain(void)
 	struct FIFO32 fifo;
 	char s[40];
 	int fifobuf[128];
-	struct TIMER *timer, *timer2, *timer3;
+	struct TIMER *timer, *timer2, *timer3, *timer_ts;
 	int mx, my, i, cursor_x, cursor_c, task_b_esp;				// cursor_x: 记录光标显示位置
 	unsigned int memtotal;
 	struct MOUSE_DEC mdec;
@@ -70,6 +70,9 @@ void HariMain(void)
 	timer3 = timer_alloc();
 	timer_init(timer3, &fifo, 1);
 	timer_settime(timer3, 50);
+	timer_ts = timer_alloc();
+	timer_init(timer_ts, &fifo, 2);
+	timer_settime(timer_ts, 2);
 
 	memtotal = memtest(0x00400000, 0xbfffffff);					// 使用的内存空间，包含了0x00400000前已用的内存
 	memman_init(memman);
@@ -143,7 +146,10 @@ void HariMain(void)
 		} else {
 			i = fifo32_get(&fifo);
 			io_sti();
-			if (256 <= i && i <= 511) {							/* 键盘数据 */
+			if (i == 2) {
+				farjmp(0, 4 * 8);
+				timer_settime(timer_ts, 2);
+			} else if (256 <= i && i <= 511) {					/* 键盘数据 */
 				sprintf(s, "%02X", i - 256);
 				putfonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 				if (i < 256 + 0x54) {
@@ -202,7 +208,6 @@ void HariMain(void)
 				}
 			} else if (i == 10) {								/* 10秒定时器 */
 				putfonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
-				taskswitch4();
 			} else if (i == 3) {								/* 3秒定时器 */
 				putfonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
 			} else if (i <= 1) {								/* 光标用定时器 */
@@ -303,13 +308,13 @@ void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c)
 void task_b_main(void)
 {
 	struct FIFO32 fifo;
-	struct TIMER *timer;
+	struct TIMER *timer_ts;
 	int i, fifobuf[128];
 
 	fifo32_init(&fifo, 128, fifobuf);
-	timer = timer_alloc();
-	timer_init(timer, &fifo, 1);
-	timer_settime(timer, 500);
+	timer_ts = timer_alloc();
+	timer_init(timer_ts, &fifo, 1);
+	timer_settime(timer_ts, 2);
 
 	for (;;) {
 		io_cli();
@@ -319,8 +324,9 @@ void task_b_main(void)
 		} else {
 			i = fifo32_get(&fifo);
 			io_sti();
-			if (i == 1) {										/* 超过时间为5秒 */
-				taskswitch3();									/* 返回任务A */
+			if (i == 1) {										/* 任务切换 */
+				farjmp(0, 3 * 8);
+				timer_settime(timer_ts, 2);
 			}
 		}
 	}
