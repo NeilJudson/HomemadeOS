@@ -17,7 +17,7 @@
 		GLOBAL	_asm_inthandler20, _asm_inthandler21
 		GLOBAL	_asm_inthandler27, _asm_inthandler2c
 		GLOBAL	_memtest_sub
-		GLOBAL	_taskswitch4
+		GLOBAL	_taskswitch3, _taskswitch4
 		EXTERN	_inthandler20, _inthandler21
 		EXTERN	_inthandler27, _inthandler2c
 
@@ -32,11 +32,11 @@ _io_hlt:										; void io_hlt(void);
 
 ; 将中断许可标志置为0，禁止中断
 _io_cli:										; void io_cli(void);
-		CLI										; 将中断标志置为0
+		CLI										; 将中断标志置为0，禁止中断发生
 		RET
 
 _io_sti:										; void io_sti(void);
-		STI										; 将中断标志置为1
+		STI										; 将中断标志置为1，允许中断发生
 		RET
 
 _io_stihlt:										; void io_stihlt(void);
@@ -232,6 +232,10 @@ mts_fin:
 ;===============================================================
 ;
 ;===============================================================
+_taskswitch3:									; void taskswitch3(void);
+		JMP		3*8:0
+		RET
+
 _taskswitch4:									; void taskswitch4(void);
 		JMP		4*8:0
 		RET
