@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "naskfunc.h"
 #include "int.h"
+#include "mtask.h"
 
 #define PIT_CTRL	0x0043
 #define PIT_CNT0	0x0040
@@ -89,6 +90,7 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 void inthandler20(int *esp)
 {
 	struct TIMER *timer;
+	char ts = 0;
 	io_out8(PIC0_OCW2, 0x60);									/* 把IRQ-00信号接收完了的信息通知给PIC */
 	timerctl.count++;
 	if (timerctl.nextTime > timerctl.count) {
@@ -102,12 +104,19 @@ void inthandler20(int *esp)
 		}
 		/* 超时 */
 		timer->flags = TIMER_FLAGS_ALLOC;
-		fifo32_put(timer->fifo, timer->data);
+		if (timer != mt_timer) {
+			fifo32_put(timer->fifo, timer->data);
+		} else {
+			ts = 1;												/* timer超时 */
+		}
 		timer = timer->nextTimer;								/* 下一定时器的地址赋给timer */
 	}
 	/* 新移位 */
 	timerctl.t0 = timer;
 	/* timerctl.nextTime的设定 */
 	timerctl.nextTime = timer->timeout;
+	if (ts != 0) {
+		mt_taskswitch();
+	}
 	return;
 }
