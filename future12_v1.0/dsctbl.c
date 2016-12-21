@@ -7,11 +7,11 @@ void init_gdtidt(void)
 	int i;
 
 	/* GDT初始化 */
-	for (i = 0; i <= LIMIT_GDT / 8; i++) {
+	for (i = 0; i <= LIMIT_GDT / 8; i++) {						// LIMIT_GDT为存放段信息的内存总Byte数，一个段信息需要8Byte
 		set_segmdesc(gdt + i, 0, 0, 0);
 	}
-	set_segmdesc(gdt + 1, 0xffffffff,   0x00000000, AR_DATA32_RW);
-	set_segmdesc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+	set_segmdesc(gdt + 1, 0xffffffff,   0x00000000, AR_DATA32_RW); // 1号段，4GB，表示CPU所能管理的全部内存本身
+	set_segmdesc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER); // 2号段，512KB，地址0x280000，是为bootpack准备的
 	load_gdtr(LIMIT_GDT, ADR_GDT);
 
 	/* IDT初始化 */
@@ -38,7 +38,7 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, i
 	* ar:		访问权限
 	*/
 	if (limit > 0xfffff) {
-		ar |= 0x8000;									// Gbit标志位为1，limit的单位为页，1页指4KB
+		ar |= 0x8000;											// Gbit标志位为1，limit的单位为页，1页指4KB
 		limit /= 0x1000;
 	}
 	sd->limit_low    = limit & 0xffff;
