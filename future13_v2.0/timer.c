@@ -104,7 +104,7 @@ void inthandler20(int *esp)
 		}
 		/* 超时 */
 		timer->flags = TIMER_FLAGS_ALLOC;
-		if (timer != mt_timer) {
+		if (timer != task_timer) {
 			fifo32_put(timer->fifo, timer->data);
 		} else {
 			ts = 1;												/* timer超时 */
@@ -116,7 +116,7 @@ void inthandler20(int *esp)
 	/* timerctl.nextTime的设定 */
 	timerctl.nextTime = timer->timeout;
 	if (ts != 0) {
-		mt_taskswitch();
+		task_switch();
 	}
 	return;
 }
