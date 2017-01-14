@@ -4,22 +4,26 @@
 #ifndef MTASK_H
 #define MTASK_H
 
-#define MAX_TASKS		1000									/* æœ€å¤§ä»»åŠ¡æ•° */
-#define TASK_GDT0		3										/* å®šä¹‰ä»GDTçš„å‡ å·å¼€å§‹åˆ†é…ç»™TSS */
+#define MAX_TASKS		1000									/* ×î´óÈÎÎñÊı */
+#define TASK_GDT0		3										/* ¶¨Òå´ÓGDTµÄ¼¸ºÅ¿ªÊ¼·ÖÅä¸øTSS */
 
 struct TSS32 {
-	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;			// ä¸ä»»åŠ¡è®¾ç½®ç›¸å…³çš„ä¿¡æ¯
+	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;			// ÓëÈÎÎñÉèÖÃÏà¹ØµÄĞÅÏ¢
 	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
 	int es, cs, ss, ds, fs, gs;
 	int ldtr, iomap;
 };
 struct TASK {
-	int sel, flags;												/* selç”¨æ¥å­˜æ”¾GDTçš„ç¼–å· */
+	/*
+	* sel£º		ÓÃÀ´´æ·ÅGDTµÄ±àºÅ
+	* flags£º	±íÊ¾ÈÎÎñ×´Ì¬£»2Îª»î¶¯ÖĞ£»1ÎªÕıÔÚÊ¹ÓÃ£¬µ«´¦ÓÚĞİÃß×´Ì¬£»0ÎªÎ´Ê¹ÓÃ
+	*/
+	int sel, flags;
 	struct TSS32 tss;
 };
 struct TASKCTL {
-	int running;												/* æ­£åœ¨è¿è¡Œçš„ä»»åŠ¡æ•°é‡ */
-	int now;													/* è¿™ä¸ªå˜é‡ç”¨æ¥è®°å½•å½“å‰æ­£åœ¨è¿è¡Œçš„æ˜¯å“ªä¸ªä»»åŠ¡ */
+	int running;												/* ÕıÔÚÔËĞĞµÄÈÎÎñÊıÁ¿ */
+	int now;													/* Õâ¸ö±äÁ¿ÓÃÀ´¼ÇÂ¼µ±Ç°ÕıÔÚÔËĞĞµÄÊÇÄÄ¸öÈÎÎñ */
 	struct TASK *tasks[MAX_TASKS];
 	struct TASK tasks0[MAX_TASKS];
 };
@@ -30,5 +34,6 @@ struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
 void task_run(struct TASK *task);
 void task_switch(void);
+void task_sleep(struct TASK *task);
 
 #endif

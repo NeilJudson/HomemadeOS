@@ -1,4 +1,6 @@
 /* asmhead.nas */
+#define ADR_BOOTINFO	0x00000ff0
+
 struct BOOTINFO {												/* 0x0ff0-0x0fff */
 	char cyls;													/* 启动区读硬盘读到何处为止 */
 	char leds;													/* 启动时键盘LED的状态 */
@@ -7,7 +9,6 @@ struct BOOTINFO {												/* 0x0ff0-0x0fff */
 	short scrnx, scrny;											/* 画面分辨率 */
 	char *vram;
 };
-#define ADR_BOOTINFO	0x00000ff0
 
 /* naskfunc.nas */
 void io_hlt(void);
@@ -34,21 +35,15 @@ void farjmp(int eip, int cs);
 struct FIFO32 {
 	int *buf;
 	int p, q, size, free, flags;
+	struct TASK *task;
 };
-void fifo32_init(struct FIFO32 *fifo, int size, int *buf);
+
+void fifo32_init(struct FIFO32 *fifo, int size, int *buf, struct TASK *task);
 int fifo32_put(struct FIFO32 *fifo, int data);
 int fifo32_get(struct FIFO32 *fifo);
 int fifo32_status(struct FIFO32 *fifo);
 
 /* graphic.c */
-void init_palette(void);
-void set_palette(int start, int end, unsigned char *rgb);
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
-void init_screen8(char *vram, int x, int y);
-void putfont8(char *vram, int xsize, int x, int y, char c, char *font);
-void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s);
-void init_mouse_cursor8(char *mouse, char bc);
-void putblock8_8(char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
 #define COL8_000000		0
 #define COL8_FF0000		1
 #define COL8_00FF00		2
@@ -66,20 +61,16 @@ void putblock8_8(char *vram, int vxsize, int pxsize, int pysize, int px0, int py
 #define COL8_008484		14
 #define COL8_848484		15
 
+void init_palette(void);
+void set_palette(int start, int end, unsigned char *rgb);
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
+void init_screen8(char *vram, int x, int y);
+void putfont8(char *vram, int xsize, int x, int y, char c, char *font);
+void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s);
+void init_mouse_cursor8(char *mouse, char bc);
+void putblock8_8(char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
+
 /* dsctbl.c */
-struct SEGMENT_DESCRIPTOR {
-	short limit_low, base_low;
-	char base_mid, access_right;
-	char limit_high, base_high;
-};
-struct GATE_DESCRIPTOR {
-	short offset_low, selector;
-	char dw_count, access_right;
-	short offset_high;
-};
-void init_gdtidt(void);
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
-void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define ADR_IDT			0x0026f800
 #define LIMIT_IDT		0x000007ff
 #define ADR_GDT			0x00270000
@@ -91,9 +82,22 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define AR_TSS32		0x0089
 #define AR_INTGATE32	0x008e
 
+struct SEGMENT_DESCRIPTOR {
+	short limit_low, base_low;
+	char base_mid, access_right;
+	char limit_high, base_high;
+};
+struct GATE_DESCRIPTOR {
+	short offset_low, selector;
+	char dw_count, access_right;
+	short offset_high;
+};
+
+void init_gdtidt(void);
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
+
 /* int.c */
-void init_pic(void);
-void inthandler27(int *esp);
 #define PIC0_ICW1		0x0020
 #define PIC0_OCW2		0x0020
 #define PIC0_IMR		0x0021
@@ -107,18 +111,23 @@ void inthandler27(int *esp);
 #define PIC1_ICW3		0x00a1
 #define PIC1_ICW4		0x00a1
 
+void init_pic(void);
+void inthandler27(int *esp);
+
 /* keyboard.c */
+#define PORT_KEYDAT		0x0060
+#define PORT_KEYCMD		0x0064
+
 void inthandler21(int *esp);
 void wait_KBC_sendready(void);
 void init_keyboard(struct FIFO32 *fifo, int data0);
-#define PORT_KEYDAT		0x0060
-#define PORT_KEYCMD		0x0064
 
 /* mouse.c */
 struct MOUSE_DEC {
 	unsigned char buf[3], phase;
 	int x, y, btn;
 };
+
 void inthandler2c(int *esp);
 void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
@@ -126,6 +135,7 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 /* memory.c */
 #define MEMMAN_FREES	4090									/* 大约32KB */
 #define MEMMAN_ADDR		0x003c0000
+
 struct FREEINFO {												/* 可用信息 */
 	unsigned int addr, size;
 };
@@ -133,6 +143,7 @@ struct MEMMAN {													/* 内存管理 */
 	int frees, maxfrees, lostsize, losts;
 	struct FREEINFO free[MEMMAN_FREES];
 };
+
 unsigned int memtest(unsigned int start, unsigned int end);
 void memman_init(struct MEMMAN *man);
 unsigned int memman_total(struct MEMMAN *man);
@@ -143,6 +154,7 @@ int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
 
 /* sheet.c */
 #define MAX_SHEETS		256
+
 struct SHEET {
 	unsigned char *buf;
 	int bxsize, bysize, vx0, vy0, col_inv, height, flags; 		/* col_inv：透明色色号，height：图层高度，flags：图层设定信息 */
@@ -154,6 +166,7 @@ struct SHTCTL {
 	struct SHEET *sheets[MAX_SHEETS];							/* 记忆地址变量 */
 	struct SHEET sheets0[MAX_SHEETS];							/* 存放准备的256个图层的信息 */
 };
+
 struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram, int xsize, int ysize);
 struct SHEET *sheet_alloc(struct SHTCTL *ctl);
 void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
@@ -164,6 +177,7 @@ void sheet_free(struct SHEET *sht);
 
 /* timer.c */
 #define MAX_TIMER		500
+
 struct TIMER {
 	struct TIMER *nextTimer;
 	unsigned int timeout, flags;								// timeout: 结束时刻
@@ -175,7 +189,9 @@ struct TIMERCTL {
 	struct TIMER *t0;
 	struct TIMER timers0[MAX_TIMER];
 };
+
 extern struct TIMERCTL timerctl;
+
 void init_pit(void);
 struct TIMER *timer_alloc(void);
 void timer_free(struct TIMER *timer);
@@ -186,6 +202,7 @@ void inthandler20(int *esp);
 /* mtask.c */
 #define MAX_TASKS		1000									/* 最大任务数 */
 #define TASK_GDT0		3										/* 定义从GDT的几号开始分配给TSS */
+
 struct TSS32 {
 	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;			// 与任务设置相关的信息
 	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
@@ -193,7 +210,11 @@ struct TSS32 {
 	int ldtr, iomap;
 };
 struct TASK {
-	int sel, flags;												/* sel用来存放GDT的编号 */
+	/*
+	* sel：		用来存放GDT的编号
+	* flags：	表示任务状态；2为活动中；1为正在使用，但处于休眠状态；0为未使用
+	*/
+	int sel, flags;
 	struct TSS32 tss;
 };
 struct TASKCTL {
@@ -202,8 +223,11 @@ struct TASKCTL {
 	struct TASK *tasks[MAX_TASKS];
 	struct TASK tasks0[MAX_TASKS];
 };
+
 extern struct TIMER *task_timer;
+
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
 void task_run(struct TASK *task);
 void task_switch(void);
+void task_sleep(struct TASK *task);

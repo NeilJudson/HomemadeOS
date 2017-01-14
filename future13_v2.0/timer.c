@@ -58,6 +58,9 @@ void timer_init(struct TIMER *timer, struct FIFO32 *fifo, int data)
 
 void timer_settime(struct TIMER *timer, unsigned int timeout)
 {
+	/*
+	* timeout: 0.01s
+	*/
 	int e;
 	struct TIMER *t, *s;
 	timer->timeout = timeout + timerctl.count;
@@ -107,7 +110,7 @@ void inthandler20(int *esp)
 		if (timer != task_timer) {
 			fifo32_put(timer->fifo, timer->data);
 		} else {
-			ts = 1;												/* timer超时 */
+			ts = 1;												// task_timer标记
 		}
 		timer = timer->nextTimer;								/* 下一定时器的地址赋给timer */
 	}
