@@ -144,7 +144,7 @@ void sheet_updown(struct SHEET *sht, int height)
 	}
 	sht->height = height;										/* 设定高度 */
 
-	/* 下面主要是进行heets[]的重新排序 */
+	/* 下面主要是进行sheets[]的重新排序 */
 	if (old > height) {											/* 比以前低 */
 		if (height >= 0) {
 			/* 把中间的往上提 */
