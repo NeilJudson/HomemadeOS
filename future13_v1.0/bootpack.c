@@ -64,18 +64,18 @@ void HariMain(void)
 		buf_win_b = (unsigned char *) memman_alloc_4k(memman, 144 * 52);
 		sheet_setbuf(sht_win_b[i], buf_win_b, 144, 52, -1);
 		sprintf(s, "task_b%d", i);
-		make_window8(buf_win_b, 144, 52, s, 0);					// act为1时，颜色不变；act为0时，标题栏变灰色。
+		make_window8(buf_win_b, 144, 52, s, 0);                 // act为1时，颜色不变；act为0时，标题栏变灰色。
 		task_b[i] = task_alloc();
 		task_b[i]->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
 		task_b[i]->tss.eip = (int) &task_b_main;
 		task_b[i]->tss.es = 1 * 8;
-		task_b[i]->tss.cs = 2 * 8;								// 与bootpack.c相同的地址段，asmkfunc.nas中bootpack启动部分
+		task_b[i]->tss.cs = 2 * 8;                              // 与bootpack.c相同的地址段，asmkfunc.nas中bootpack启动部分
 		task_b[i]->tss.ss = 1 * 8;
 		task_b[i]->tss.ds = 1 * 8;
 		task_b[i]->tss.fs = 1 * 8;
 		task_b[i]->tss.gs = 1 * 8;
 		*((int *) (task_b[i]->tss.esp + 4)) = (int) sht_win_b[i]; // 传参
-		task_run(task_b[i]);
+		task_run(task_b[i], i + 1);
 	}
 
 	/* sht_win */
@@ -283,7 +283,7 @@ void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c)
 	boxfill8(sht->buf, sht->bxsize, COL8_000000, x0 - 2, y0 - 2, x0 - 2, y1 + 0);
 	boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, x0 - 2, y1 + 1, x1 + 0, y1 + 1);
 	boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, x1 + 1, y0 - 2, x1 + 1, y1 + 1);
-	boxfill8(sht->buf, sht->bxsize, c		   , x0 - 1, y0 - 1, x1 + 0, y1 + 0);
+	boxfill8(sht->buf, sht->bxsize, c          , x0 - 1, y0 - 1, x1 + 0, y1 + 0);
 	return;
 }
 

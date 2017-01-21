@@ -180,12 +180,12 @@ void sheet_free(struct SHEET *sht);
 
 struct TIMER {
 	struct TIMER *nextTimer;
-	unsigned int timeout, flags;								// timeout: 结束时刻
+	unsigned int timeout, flags;                                // timeout: 结束时刻
 	struct FIFO32 *fifo;
 	int data;
 };
 struct TIMERCTL {
-	unsigned int count, nextTime;								// nextTime: 记录下一个时刻
+	unsigned int count, nextTime;                               // nextTime: 记录下一个时刻
 	struct TIMER *t0;
 	struct TIMER timers0[MAX_TIMER];
 };
@@ -215,6 +215,7 @@ struct TASK {
 	* flags：	表示任务状态；2为活动中；1为正在使用，但处于休眠状态；0为未使用
 	*/
 	int sel, flags;
+	int priority;
 	struct TSS32 tss;
 };
 struct TASKCTL {
@@ -228,6 +229,6 @@ extern struct TIMER *task_timer;
 
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
-void task_run(struct TASK *task);
+void task_run(struct TASK *task, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);

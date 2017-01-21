@@ -3,9 +3,11 @@
 
 #define FLAGS_OVERRUN	0x0001
 
-/* 初始化FIFO缓冲区 */
 void fifo32_init(struct FIFO32 *fifo, int size, int *buf, struct TASK *task)
 {
+	/*
+	* 初始化FIFO缓冲区
+	*/
 	fifo->size = size;
 	fifo->buf = buf;
 	fifo->free = size;											/* 缓冲区的大小 */
@@ -16,9 +18,11 @@ void fifo32_init(struct FIFO32 *fifo, int size, int *buf, struct TASK *task)
 	return;
 }
 
-/* 向FIFO传送数据并保存 */
 int fifo32_put(struct FIFO32 *fifo, int data)
 {
+	/*
+	* 向FIFO传送数据并保存
+	*/
 	if (fifo->free == 0) {
 		/* 空余没有了，溢出 */
 		fifo->flags |= FLAGS_OVERRUN;
@@ -31,16 +35,18 @@ int fifo32_put(struct FIFO32 *fifo, int data)
 	}
 	fifo->free--;
 	if (fifo->task != 0) {
-		if (fifo->task->flags != 2) {							/* 如果任务处于休眠状态 */
-			task_run(fifo->task);								/* 将任务唤醒 */
+		if (fifo->task->flags != 2) {                           /* 如果任务处于休眠状态 */
+			task_run(fifo->task, 0);                            /* 将任务唤醒 */
 		}
 	}
 	return 0;
 }
 
-/* 从FIFO取得一个数据 */
 int fifo32_get(struct FIFO32 *fifo)
 {
+	/*
+	* 从FIFO取得一个数据
+	*/
 	int data;
 	if (fifo->free == fifo->size) {
 		/* 如果缓冲区为空，则返回-1 */
@@ -55,8 +61,10 @@ int fifo32_get(struct FIFO32 *fifo)
 	return data;
 }
 
-/* 报告一下积攒了多少数据 */
 int fifo32_status(struct FIFO32 *fifo)
 {
+	/*
+	* 报告一下积攒了多少数据
+	*/
 	return fifo->size - fifo->free;
 }
