@@ -3,7 +3,7 @@
 
 struct FIFO32 {
 	int *buf;
-	int p, q, size, free, flags;
+	int p, q, size, free, flag;                                 // p：下一个数据写入位置；q：下一个数据读出位置；task：有数据写入时需要唤醒的任务
 	struct TASK *task;
 };
 

@@ -17,11 +17,11 @@ void init_pit(void)
 	io_out8(PIT_CNT0, 0x2e);									// 中断周期的高8位
 	timerctl.count = 0;
 	for (i = 0; i < MAX_TIMER; i++) {
-		timerctl.timers0[i].flags = 0;							/* 未使用 */
+		timerctl.timers0[i].flag = 0;							/* 未使用 */
 	}
 	t = timer_alloc();											/* 取得一个 */
 	t->timeout = 0xffffffff;
-	t->flags = TIMER_FLAGS_USING;
+	t->flag = TIMER_FLAGS_USING;
 	t->nextTimer = 0;											/* 末尾 */
 	timerctl.t0 = t;											/* 因为现在只有哨兵，所以他就在最前面 */
 	timerctl.nextTime = 0xffffffff;								/* 因为只有哨兵，所以下一个超时时刻就是哨兵的时刻 */
@@ -32,8 +32,8 @@ struct TIMER *timer_alloc(void)
 {
 	int i;
 	for (i = 0; i < MAX_TIMER; i++) {
-		if (timerctl.timers0[i].flags == 0) {
-			timerctl.timers0[i].flags = TIMER_FLAGS_ALLOC;
+		if (timerctl.timers0[i].flag == 0) {
+			timerctl.timers0[i].flag = TIMER_FLAGS_ALLOC;
 			return &timerctl.timers0[i];
 		}
 	}
@@ -42,7 +42,7 @@ struct TIMER *timer_alloc(void)
 
 void timer_free(struct TIMER *timer)
 {
-	timer->flags = 0;											/* 未使用 */
+	timer->flag = 0;											/* 未使用 */
 	return;
 }
 
@@ -61,7 +61,7 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 	int e;
 	struct TIMER *t, *s;
 	timer->timeout = timeout + timerctl.count;
-	timer->flags = TIMER_FLAGS_USING;
+	timer->flag = TIMER_FLAGS_USING;
 	e = io_load_eflags();
 	io_cli();
 	t = timerctl.t0;
@@ -103,7 +103,7 @@ void inthandler20(int *esp)
 			break;
 		}
 		/* 超时 */
-		timer->flags = TIMER_FLAGS_ALLOC;
+		timer->flag = TIMER_FLAGS_ALLOC;
 		if (timer != task_timer) {
 			fifo32_put(timer->fifo, timer->data);
 		} else {

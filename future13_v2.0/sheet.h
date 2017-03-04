@@ -7,7 +7,7 @@
 
 struct SHEET {
 	unsigned char *buf;
-	int bxsize, bysize, vx0, vy0, col_inv, height, flags; 		/* col_inv：透明色色号，height：图层高度，flags：图层设定信息 */
+	int bxsize, bysize, vx0, vy0, col_inv, height, flag; 		/* col_inv：透明色色号；height：图层高度；flags：图层设定信息 */
 	struct SHTCTL *ctl;
 };
 struct SHTCTL {

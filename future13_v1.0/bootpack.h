@@ -34,7 +34,7 @@ void farjmp(int eip, int cs);
 /* fifo.c */
 struct FIFO32 {
 	int *buf;
-	int p, q, size, free, flags;
+	int p, q, size, free, flag;                                 // p：下一个数据写入位置；q：下一个数据读出位置；task：有数据写入时需要唤醒的任务
 	struct TASK *task;
 };
 
@@ -133,13 +133,13 @@ void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* memory.c */
-#define MEMMAN_FREES	4090									/* 大约32KB */
+#define MEMMAN_FREES	4090                                    /* 大约32KB */
 #define MEMMAN_ADDR		0x003c0000
 
-struct FREEINFO {												/* 可用信息 */
+struct FREEINFO {                                               /* 可用信息 */
 	unsigned int addr, size;
 };
-struct MEMMAN {													/* 内存管理 */
+struct MEMMAN {                                                 /* 内存管理 */
 	int frees, maxfrees, lostsize, losts;
 	struct FREEINFO free[MEMMAN_FREES];
 };
@@ -157,7 +157,7 @@ int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
 
 struct SHEET {
 	unsigned char *buf;
-	int bxsize, bysize, vx0, vy0, col_inv, height, flags; 		/* col_inv：透明色色号，height：图层高度，flags：图层设定信息 */
+	int bxsize, bysize, vx0, vy0, col_inv, height, flag; 		/* col_inv：透明色色号；height：图层高度；flags：图层设定信息 */
 	struct SHTCTL *ctl;
 };
 struct SHTCTL {
@@ -180,7 +180,7 @@ void sheet_free(struct SHEET *sht);
 
 struct TIMER {
 	struct TIMER *nextTimer;
-	unsigned int timeout, flags;                                // timeout: 结束时刻
+	unsigned int timeout, flag;                                 // timeout: 结束时刻
 	struct FIFO32 *fifo;
 	int data;
 };
@@ -200,8 +200,10 @@ void timer_settime(struct TIMER *timer, unsigned int timeout);
 void inthandler20(int *esp);
 
 /* mtask.c */
-#define MAX_TASKS		1000									/* 最大任务数 */
-#define TASK_GDT0		3										/* 定义从GDT的几号开始分配给TSS */
+#define MAX_TASKS      1000                                     /* 最大任务数 */
+#define TASK_GDT0      3                                        /* 定义从GDT的几号开始分配给TSS */
+#define MAX_TASKS_LV   100
+#define MAX_TASKLEVELS 10
 
 struct TSS32 {
 	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;			// 与任务设置相关的信息
@@ -211,17 +213,22 @@ struct TSS32 {
 };
 struct TASK {
 	/*
-	* sel：		用来存放GDT的编号
-	* flags：	表示任务状态；2为活动中；1为正在使用，但处于休眠状态；0为未使用
+	* gdtId：    用来存放GDT的编号
+	* flag：     表示任务状态；2为活动中；1为正在使用，但处于休眠状态；0为未使用
 	*/
-	int sel, flags;
-	int priority;
+	int gdtId, flag;
+	int level, priority;
 	struct TSS32 tss;
 };
+struct TASKLEVEL {
+	int numOfTasks;                                             /* 正在运行的任务数量 */
+	int runningTaskId;                                          /* 这个变量用来记录当前正在运行的是哪个任务 */
+	struct TASK *tasks[MAX_TASKS_LV];
+};
 struct TASKCTL {
-	int running;												/* 正在运行的任务数量 */
-	int now;													/* 这个变量用来记录当前正在运行的是哪个任务 */
-	struct TASK *tasks[MAX_TASKS];
+	int runningLevelId;                                         /* 现在活动中的LEVEL */
+	char lv_change;                                             /* 在下次任务切换时是否需要改变LEVEL */
+	struct TASKLEVEL level[MAX_TASKLEVELS];
 	struct TASK tasks0[MAX_TASKS];
 };
 
@@ -229,6 +236,6 @@ extern struct TIMER *task_timer;
 
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
-void task_run(struct TASK *task, int priority);
+void task_run(struct TASK *task, int level, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);

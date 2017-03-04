@@ -20,7 +20,7 @@ struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram, int xsize
 	ctl->ysize = ysize;
 	ctl->top = -1;												/* 一个SHEET都没有 */
 	for (i = 0; i < MAX_SHEETS; i++) {
-		ctl->sheets0[i].flags = 0;								/* 标记为未使用 */
+		ctl->sheets0[i].flag = 0;								/* 标记为未使用 */
 		ctl->sheets0[i].ctl = ctl;								/* 记录所属 */
 	}
 	return ctl;
@@ -31,9 +31,9 @@ struct SHEET *sheet_alloc(struct SHTCTL *ctl)
 	struct SHEET *sht;
 	int i;
 	for (i = 0; i < MAX_SHEETS; i++) {
-		if (ctl->sheets0[i].flags == 0) {
+		if (ctl->sheets0[i].flag == 0) {
 			sht = &ctl->sheets0[i];
-			sht->flags = SHEET_USE;								/* 标记为正在使用 */
+			sht->flag = SHEET_USE;								/* 标记为正在使用 */
 			sht->height = -1;									/* 隐藏 */
 			return sht;
 		}
@@ -221,6 +221,6 @@ void sheet_free(struct SHEET *sht)
 	if (sht->height >= 0) {
 		sheet_updown(sht, -1);									/* 如果处于显示状态，则先设定为隐藏 */
 	}
-	sht->flags = 0;												/* “未使用”标志 */
+	sht->flag = 0;												/* “未使用”标志 */
 	return;
 }

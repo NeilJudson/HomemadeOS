@@ -8,27 +8,27 @@ void task_b_main(struct SHEET *sht_back);
 
 void HariMain(void)
 {
-	struct FIFO32		fifo;
-	int					fifobuf[128];
-	struct MOUSE_DEC	mdec;
-	struct BOOTINFO		*binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	char				s[40];
-	struct TIMER		*timer;
-	unsigned int		memtotal;
-	struct MEMMAN		*memman = (struct MEMMAN *) MEMMAN_ADDR;
-	struct SHTCTL		*shtctl;
-	struct SHEET		*sht_back, *sht_mouse, *sht_win, *sht_win_b[3];
-	unsigned char		*buf_back, buf_mouse[256], *buf_win, *buf_win_b;
-	int 				mx, my, i, cursor_x, cursor_c;			// cursor_x: 记录光标显示位置
-	static char			keytable[0x54] = {
+	struct FIFO32       fifo;
+	int                 fifobuf[128];
+	struct MOUSE_DEC    mdec;
+	struct BOOTINFO     *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+	char                s[40];
+	struct TIMER        *timer;
+	unsigned int        memtotal;
+	struct MEMMAN       *memman = (struct MEMMAN *) MEMMAN_ADDR;
+	struct SHTCTL       *shtctl;
+	struct SHEET        *sht_back, *sht_mouse, *sht_win, *sht_win_b[3];
+	unsigned char       *buf_back, buf_mouse[256], *buf_win, *buf_win_b;
+	int                 mx, my, i, cursor_x, cursor_c;			// cursor_x: 记录光标显示位置
+	static char         keytable[0x54] = {
 							0  , 0	, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' , '-', '=', 0  , 0  ,
 							'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']' , 0	, 0  , 'A', 'S',
 							'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0	, 0  , '\\', 'Z', 'X', 'C', 'V',
 							'B', 'N', 'M', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0   , 0	, 0  , 0  , 0  ,
 							0  , 0	, 0  , 0  , 0  , 0	, 0  , '7', '8', '9', '-', '4' , '5', '6', '+', '1',
 							'2', '3', '0', '.'
-						};
-	struct TASK			*task_a, *task_b[3];
+	                    };
+	struct TASK         *task_a, *task_b[3];
 
 	init_gdtidt();
 	init_pic();
@@ -51,6 +51,7 @@ void HariMain(void)
 	
 	task_a = task_init(memman);									// 为什么没给tss.eip、tss.esp赋值？task_a什么都不干。
 	fifo.task = task_a;
+	task_run(task_a, 1, 2);
 
 	/* sht_back */
 	sht_back = sheet_alloc(shtctl);
@@ -75,14 +76,14 @@ void HariMain(void)
 		task_b[i]->tss.fs = 1 * 8;
 		task_b[i]->tss.gs = 1 * 8;
 		*((int *) (task_b[i]->tss.esp + 4)) = (int) sht_win_b[i]; // 传参
-		task_run(task_b[i], i + 1);
+		task_run(task_b[i], 2, i + 1);
 	}
 
 	/* sht_win */
 	sht_win = sheet_alloc(shtctl);
 	buf_win = (unsigned char *) memman_alloc_4k(memman, 160 * 52);
-	sheet_setbuf(sht_win, buf_win, 144, 52, -1);				/* 没有透明色 */
-	make_window8(buf_win, 144, 52, "task_a", 1);				// act为1时，颜色不变；act为0时，标题栏变灰色。
+	sheet_setbuf(sht_win, buf_win, 144, 52, -1);                /* 没有透明色 */
+	make_window8(buf_win, 144, 52, "task_a", 1);                // act为1时，颜色不变；act为0时，标题栏变灰色。
 	make_textbox8(sht_win, 8, 28, 128, 16, COL8_FFFFFF);
 	cursor_x = 8;
 	cursor_c = COL8_FFFFFF;
@@ -92,7 +93,7 @@ void HariMain(void)
 
 	/* sht_mouse */
 	sht_mouse = sheet_alloc(shtctl);
-	sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);				// 透明色号99
+	sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);             // 透明色号99
 	init_mouse_cursor8(buf_mouse, 99);
 	mx = (binfo->scrnx - 16) / 2;
 	my = (binfo->scrny - 28 - 16) / 2;
@@ -221,7 +222,7 @@ void make_window8(unsigned char *buf, int xsize, int ysize, char *title, char ac
 	};
 	int x, y;
 	char c, tc, tbc;
-	if (act != 0) {												// act为1时，颜色不变；act为0时，标题栏变灰色
+	if (act != 0) {                                             // act为1时，颜色不变；act为0时，标题栏变灰色
 		tc = COL8_FFFFFF;
 		tbc = COL8_000084;
 	} else {

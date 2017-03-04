@@ -7,7 +7,7 @@
 
 struct TIMER {
 	struct TIMER *nextTimer;
-	unsigned int timeout, flags;                                // timeout: 结束时刻
+	unsigned int timeout, flag;                                 // timeout: 结束时刻
 	struct FIFO32 *fifo;
 	int data;
 };
