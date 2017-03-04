@@ -32,25 +32,25 @@ void HariMain(void)
 	unsigned char       *buf_back, buf_mouse[256], *buf_win, *buf_win_b;
 	int                 mx, my, i, cursor_x, cursor_c;			// cursor_x: 记录光标显示位置
 	static char         keytable[0x54] = {
-							0  , 0	, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' , '-', '=', 0  , 0  ,
-							'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']' , 0	, 0  , 'A', 'S',
-							'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0	, 0  , '\\', 'Z', 'X', 'C', 'V',
-							'B', 'N', 'M', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0   , 0	, 0  , 0  , 0  ,
-							0  , 0	, 0  , 0  , 0  , 0	, 0  , '7', '8', '9', '-', '4' , '5', '6', '+', '1',
-							'2', '3', '0', '.'
+	                        0  , 0	, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' , '-', '=', 0  , 0  ,
+	                        'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']' , 0	, 0  , 'A', 'S',
+	                        'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0	, 0  , '\\', 'Z', 'X', 'C', 'V',
+	                        'B', 'N', 'M', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0   , 0	, 0  , 0  , 0  ,
+	                        0  , 0	, 0  , 0  , 0  , 0	, 0  , '7', '8', '9', '-', '4' , '5', '6', '+', '1',
+	                        '2', '3', '0', '.'
 	                    };
 	struct TASK         *task_a, *task_b[3];
 
 	init_gdtidt();
 	init_pic();
-	io_sti();													/* IDT/PIC的初始化结束，开启CPU中断 */
+	io_sti();                                                   /* IDT/PIC的初始化结束，开启CPU中断 */
 
 	fifo32_init(&fifo, 128, fifobuf, 0);
 	init_pit();
 	init_keyboard(&fifo, 256);
 	enable_mouse(&fifo, 512, &mdec);
-	io_out8(PIC0_IMR, 0xf8);									/* 许可PIC1和键盘(11111000) */
-	io_out8(PIC1_IMR, 0xef);									/* 许可鼠标(11101111) */
+	io_out8(PIC0_IMR, 0xf8);                                    /* 许可PIC1和键盘(11111000) */
+	io_out8(PIC1_IMR, 0xef);                                    /* 许可鼠标(11101111) */
 
 	memtotal = memtest(0x00400000, 0xbfffffff);					// 使用的内存空间，包含了0x00400000前已用的内存
 	memman_init(memman);
