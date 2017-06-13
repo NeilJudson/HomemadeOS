@@ -33,15 +33,27 @@ void HariMain(void)
 	int                 cursor_x, cursor_c, mx, my, i;          // cursor_x: 记录光标显示位置
 	struct TIMER        *timer;
 	char                s[40];
-	static char         keytable[0x54] = {
-	                        0  , 0	, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' , '-', '=', 0  , 0  ,
-	                        'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']' , 0	, 0  , 'A', 'S',
-	                        'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0	, 0  , '\\', 'Z', 'X', 'C', 'V',
-	                        'B', 'N', 'M', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0   , 0	, 0  , 0  , 0  ,
-	                        0  , 0	, 0  , 0  , 0  , 0	, 0  , '7', '8', '9', '-', '4' , '5', '6', '+', '1',
-	                        '2', '3', '0', '.'
+	static char         keytable0[0x80] = {
+	                          0,   0, '1',  '2', '3', '4', '5', '6',  '7', '8', '9',  '0', '-',  '=',   0,   0,
+	                        'Q', 'W', 'E',  'R', 'T', 'Y', 'U', 'I',  'O', 'P', '[',  ']',   0,    0, 'A', 'S',
+	                        'D', 'F', 'G',  'H', 'J', 'K', 'L', ';', '\'', '`',   0, '\\', 'Z',  'X', 'C', 'V',
+	                        'B', 'N', 'M',  ',', '.', '/',   0, '*',    0, ' ',   0,    0,   0,    0,   0,   0,
+	                          0,   0,   0,    0,   0,   0,   0, '7',  '8', '9', '-',  '4', '5',  '6', '+', '1',
+	                        '2', '3', '0',  '.',   0,   0,   0,   0,    0,   0,   0,    0,   0,    0,   0,   0,
+	                          0,   0,   0,    0,   0,   0,   0,   0,    0,   0,   0,    0,   0,    0,   0,   0,
+	                          0,   0,   0, 0x5c,   0,   0,   0,   0,    0,   0,   0,    0,   0, 0x5c,   0,   0
 	                    };
-	int                 key_to = 0;
+	static char         keytable1[0x80] = {
+	                          0,   0, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',   0,   0,
+	                        'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}',   0,   0, 'A', 'S',
+	                        'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',   0, '|', 'Z', 'X', 'C', 'V',
+	                        'B', 'N', 'M', '<', '>', '?',   0, '*',   0, ' ',   0,   0,   0,   0,   0,   0,
+	                          0,   0,   0,   0,   0,   0,   0, '7',  '8', '9', '-', '4', '5', '6', '+', '1',
+	                        '2', '3', '0', '.',   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+	                          0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+	                          0,   0,   0, '_',   0,   0,   0,   0,   0,   0,   0,   0,   0, '|',   0,   0
+	                    };
+	int                 key_to = 0, key_shift = 0;              // 为1时，console窗口有效
 
 	init_gdtidt();
 	init_pic();
@@ -54,15 +66,15 @@ void HariMain(void)
 	io_out8(PIC0_IMR, 0xf8);                                    /* 许可PIC1和键盘(11111000) */
 	io_out8(PIC1_IMR, 0xef);                                    /* 许可鼠标(11101111) */
 
-	memtotal = memtest(0x00400000, 0xbfffffff);					// 使用的内存空间，包含了0x00400000前已用的内存
+	memtotal = memtest(0x00400000, 0xbfffffff);                 // 使用的内存空间，包含了0x00400000前已用的内存
 	memman_init(memman);
-	memman_free(memman, 0x00001000, 0x0009e000);				/* 0x00001000 - 0x0009efff */
+	memman_free(memman, 0x00001000, 0x0009e000);                /* 0x00001000 - 0x0009efff */
 	memman_free(memman, 0x00400000, memtotal - 0x00400000);
 
 	init_palette();
 	shtctl = shtctl_init(memman, binfo->vram, binfo->scrnx, binfo->scrny);
 	
-	task_a = task_init(memman);									// 为什么没给tss.eip、tss.esp赋值？task_a什么都不干。
+	task_a = task_init(memman);                                 // 为什么没给tss.eip、tss.esp赋值？task_a什么都不干。
 	fifo.task = task_a;
 	task_run(task_a, 1, 2);
 
@@ -139,20 +151,28 @@ void HariMain(void)
 			if (256 <= i && i <= 511) {							/* 键盘数据 */
 				sprintf(s, "%02X", i - 256);
 				putfonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
-				if (i < 256 + 0x54 && keytable[i - 256] != 0) { /* 通常文字 */
+				if (i < 0x80 + 256) {                           /* 将按键编码转换为字符编码 */
+					if (key_shift == 0) {
+						s[0] = keytable0[i - 256];
+					} else {
+						s[0] = keytable1[i - 256];
+					}
+				} else {
+					s[0] = 0;
+				}
+				if (s[0] != 0) {                                /* 通常文字 */
 					if (key_to == 0) {                          /* 发送给任务A */
 						if (cursor_x < 128) {
 							/* 显示1个字符就前移1次光标 */
-							s[0] = keytable[i - 256];
 							s[1] = 0;
 							putfonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, s, 1);
 							cursor_x += 8;
 						}
 					} else {                                    /* 发送给命令行窗口 */
-						fifo32_put(&task_cons->fifo, keytable[i - 256] + 256);
+						fifo32_put(&task_cons->fifo, s[0] + 256);
 					}
 				}
-				if (i == 256 + 0x0e) {                          /* 退格键 */
+				if (i == 0x0e + 256) {                          /* 退格键 */
 					if (key_to == 0) {                          /* 发送给任务A */
 						if (cursor_x > 8) {
 							/* 用空格键把光标消去后，后移1次光标 */
@@ -163,7 +183,7 @@ void HariMain(void)
 						fifo32_put(&task_cons->fifo, 8 + 256);
 					}
 				}
-				if (i == 256 + 0x0f) {                          /* Tab */
+				if (i == 0x0f + 256) {                          /* Tab */
 					if (key_to == 0) {
 						key_to = 1;
 						make_wtitle8(buf_win,  sht_win->bxsize,  "task_a",  0);
@@ -175,6 +195,18 @@ void HariMain(void)
 					}
 					sheet_refresh(sht_win,  0, 0, sht_win->bxsize,  21);
 					sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
+				}
+				if (i == 0x2a + 256) {                          /* 左Shift ON */
+					key_shift |= 1;
+				}
+				if (i == 0x36 + 256) {                          /* 右Shift ON */
+					key_shift |= 2;
+				}
+				if (i == 0xaa + 256) {                          /* 左Shift OFF */
+					key_shift &= ~1;
+				}
+				if (i == 0xb6 + 256) {                          /* 右Shift OFF */
+					key_shift &= ~2;
 				}
 				/* カーソルの再表示 */
 				boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
@@ -253,20 +285,20 @@ void make_wtitle8(unsigned char *buf, int xsize, char *title, char act)
 	* act: 为1时，颜色不变；为0时，标题栏变灰色。
 	*/
 	static char closebtn[14][16] = {
-		"OOOOOOOOOOOOOOO@",
-		"OQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQ$@",
-		"OQQQ@@QQQQ@@QQ$@",
-		"OQQQQ@@QQ@@QQQ$@",
-		"OQQQQQ@@@@QQQQ$@",
-		"OQQQQQQ@@QQQQQ$@",
-		"OQQQQQ@@@@QQQQ$@",
-		"OQQQQ@@QQ@@QQQ$@",
-		"OQQQ@@QQQQ@@QQ$@",
-		"OQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQ$@",
-		"O$$$$$$$$$$$$$$@",
-		"@@@@@@@@@@@@@@@@"
+	    "OOOOOOOOOOOOOOO@",
+	    "OQQQQQQQQQQQQQ$@",
+	    "OQQQQQQQQQQQQQ$@",
+	    "OQQQ@@QQQQ@@QQ$@",
+	    "OQQQQ@@QQ@@QQQ$@",
+	    "OQQQQQ@@@@QQQQ$@",
+	    "OQQQQQQ@@QQQQQ$@",
+	    "OQQQQQ@@@@QQQQ$@",
+	    "OQQQQ@@QQ@@QQQ$@",
+	    "OQQQ@@QQQQ@@QQ$@",
+	    "OQQQQQQQQQQQQQ$@",
+	    "OQQQQQQQQQQQQQ$@",
+	    "O$$$$$$$$$$$$$$@",
+	    "@@@@@@@@@@@@@@@@"
 	};
 	int x, y;
 	char c, tc, tbc;
