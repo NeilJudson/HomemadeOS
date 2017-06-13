@@ -218,6 +218,7 @@ struct TASK {
 	*/
 	int gdtId, flag;
 	int level, priority;
+	struct FIFO32 fifo;
 	struct TSS32 tss;
 };
 struct TASKLEVEL {
