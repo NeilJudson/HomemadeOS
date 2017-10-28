@@ -46,7 +46,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 {
 	/*
 	* 区域涂色
-	* 内存vram的(x0,y0)至(x1,y1)区域
+	* 内存vram的[(x0,y0),(x1,y1)]区域
 	* c: 颜色
 	*/
 	int x, y;
@@ -82,7 +82,7 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font)
 {
 	/*
 	* 写入字符
-	* 内存vram的(x,y)至(x+7,y+15)区域
+	* 内存vram的[(x,y),(x+7,y+15)]区域
 	* c:	字符颜色
 	* font:	字符
 	*/
@@ -122,7 +122,7 @@ void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s
 void init_mouse_cursor8(char *mouse, char bc)
 {
 	/*
-	* 准备鼠标指针（16*16）
+	* 准备鼠标指针，大小16*16
 	* bc: 背景颜色
 	*/
 	static char cursor[16][16] = {
@@ -165,7 +165,7 @@ void putblock8_8(char *vram, int vxsize, int pxsize, int pysize, int px0, int py
 {
 	/*
 	* 显示buf的画面
-	* 内存vram的(px0,py0)至(px0+pxsize,py0+pysize)区域
+	* 内存vram的[(px0,py0),(px0+pxsize,py0+pysize))区域
 	* bxsize: buf画面的宽
 	*/
 	int x, y;
