@@ -1,7 +1,15 @@
 #include "bootpack.h"
 #include <stdio.h>
+#include <string.h>
 
 #define KEYCMD_LED      0xed
+
+struct FILEINFO {
+	unsigned char name[8], ext[3], type;
+	char reserve[10];
+	unsigned short time, date, clustno;
+	unsigned int size;
+};
 
 void make_window8(unsigned char *buf, int xsize, int ysize, char *title, char act);
 void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, int l);
@@ -415,6 +423,8 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 	int i, fifobuf[128], cursor_x = 16, cursor_y = 28, cursor_c = -1;
 	char s[30], cmdline[30];
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
+	int x, y;
+	struct FILEINFO *finfo = (struct FILEINFO *) (ADR_DISKIMG + 0x002600);
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 	
@@ -470,7 +480,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 					cmdline[cursor_x / 8 - 2] = 0;
 					cursor_y = cons_newline(cursor_y, sheet);
 					/* 执行命令 */
-					if (cmdline[0] == 'm' && cmdline[1] == 'e' && cmdline[2] == 'm' && cmdline[3] == 0) {
+					if (strcmp(cmdline, "mem") == 0) {
 						/* mem命令 */
 						sprintf(s, "total   %dMB", memtotal / (1024 * 1024));
 						putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
@@ -478,6 +488,36 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 						sprintf(s, "free %dKB", memman_total(memman) / 1024);
 						putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
 						cursor_y = cons_newline(cursor_y, sheet);
+						cursor_y = cons_newline(cursor_y, sheet);
+					} else if (strcmp(cmdline, "cls") == 0) {
+						/* cls命令 */
+						for (y = 28; y < 28 + 128; y++) {
+							for (x = 8; x < 8 + 240; x++) {
+								sheet->buf[x + y * sheet->bxsize] = COL8_000000;
+							}
+						}
+						sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
+						cursor_y = 28;
+					} else if (strcmp(cmdline, "dir") == 0) {
+						/* dir命令 */
+						for (x = 0; x < 224; x++) {
+							if (finfo[x].name[0] == 0x00) {     // 不包含任何文件名信息
+								break;
+							}
+							if (finfo[x].name[0] != 0xe5) {     // 没有被删除
+								if ((finfo[x].type & 0x18) == 0) {
+									sprintf(s, "filename.ext   %7d", finfo[x].size);
+									for (y = 0; y < 8; y++) {
+										s[y] = finfo[x].name[y];
+									}
+									s[ 9] = finfo[x].ext[0];
+									s[10] = finfo[x].ext[1];
+									s[11] = finfo[x].ext[2];
+									putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
+									cursor_y = cons_newline(cursor_y, sheet);
+								}
+							}
+						}
 						cursor_y = cons_newline(cursor_y, sheet);
 					} else if (cmdline[0] != 0) {
 						/* 不是命令，也不是空行 */

@@ -53,6 +53,8 @@ future.img : ipl.bin future.sys Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:ipl.bin len:512 from:0 to:0 \
 		copy from:future.sys to:@: \
+		copy from:ipl.nas to:@: \
+		copy from:make.bat to:@: \
 		imgout:future.img
 
 # “ª∞„πÊ‘Ú
