@@ -310,14 +310,14 @@ void HariMain(void)
 						sheet_slide(sht_win, mx - 80, my - 8);
 					}
 				}
-			} else if (i <= 1) {								/* 光标用定时器 */
+			} else if (i <= 1) {                                /* 光标用定时器 */
 				if (i != 0) {
-					timer_init(timer, &fifo, 0);				/* 下面设定0 */
+					timer_init(timer, &fifo, 0);                /* 下面设定0 */
 					if (cursor_c >= 0) {
 						cursor_c = COL8_000000;
 					}
 				} else {
-					timer_init(timer, &fifo, 1);				/* 下面设定1 */
+					timer_init(timer, &fifo, 1);                /* 下面设定1 */
 					if (cursor_c >= 0) {
 						cursor_c = COL8_FFFFFF;
 					}
@@ -407,8 +407,8 @@ void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, i
 	* l: 字符串长度
 	*/
 	boxfill8(sht->buf, sht->bxsize, b, x, y, x + l * 8 - 1, y + 15); // 涂背景色
-	putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);			// 写上字符
-	sheet_refresh(sht, x, y, x + l * 8, y + 16);				// 刷新
+	putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);           // 写上字符
+	sheet_refresh(sht, x, y, x + l * 8, y + 16);                // 刷新
 	return;
 }
 
@@ -530,7 +530,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 							}
 						}
 						cursor_y = cons_newline(cursor_y, sheet);
-					} else if (cmdline[0] == 't' && cmdline[1] == 'y' && cmdline[2] == 'p' && cmdline[3] == 'e' && cmdline[4] == ' ') {
+					} else if (strncmp(cmdline, "type ", 5) == 0) { // 只比较前5个字符 
 						/* type命令 */
 						/* 准备文件名 */
 						for (y = 0; y < 11; y++) {
@@ -560,7 +560,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 										goto type_next_file;
 									}
 								}
-								break; /* 找到文件 */
+								break;                          /* 找到文件 */
 							}
 						type_next_file:
 							x++;
@@ -574,11 +574,30 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 								/* 逐字输出 */
 								s[0] = p[x];
 								s[1] = 0;
-								putfonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, s, 1);
-								cursor_x += 8;
-								if (cursor_x == 8 + 240) {      // 到达最右端后换行
+								if (s[0] == 0x09) {             /* 制表符 */
+									for (;;) {
+										putfonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, " ", 1);
+										cursor_x += 8;
+										if (cursor_x == 8 + 240) {
+											cursor_x = 8;
+											cursor_y = cons_newline(cursor_y, sheet);
+										}
+										if (((cursor_x - 8) & 0x1f) == 0) {
+											break;              /* 被32整除则break */
+										}
+									}
+								} else if (s[0] == 0x0a) {      /* 换行 */
 									cursor_x = 8;
 									cursor_y = cons_newline(cursor_y, sheet);
+								} else if (s[0] == 0x0d) {      /* 回车 */
+									/* 这里暂且不进行任何操作 */
+								} else {                        /* 一般字符 */
+									putfonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, s, 1);
+									cursor_x += 8;
+									if (cursor_x == 8 + 240) {  // 到达最右端后换行
+										cursor_x = 8;
+										cursor_y = cons_newline(cursor_y, sheet);
+									}
 								}
 							}
 						} else {
