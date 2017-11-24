@@ -1,3 +1,5 @@
+/* 图形处理相关 */
+
 #include "bootpack.h"
 
 void init_palette(void)

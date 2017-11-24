@@ -1,3 +1,5 @@
+/* ผüลฬฯเนุ */
+
 #include "keyboard.h"
 #include "naskfunc.h"
 #include "fifo.h"

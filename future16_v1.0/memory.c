@@ -1,3 +1,5 @@
+/* ฤฺดๆฯเนุ */
+
 #include "bootpack.h"
 
 #define EFLAGS_AC_BIT		0x00040000

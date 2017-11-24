@@ -1,3 +1,5 @@
+/* 多任务相关 */
+
 #include "bootpack.h"
 
 struct TASKCTL *taskctl;

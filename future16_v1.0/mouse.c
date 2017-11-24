@@ -1,3 +1,5 @@
+/* ส๓ฑ๊ฯเนุ */
+
 #include "bootpack.h"
 
 struct FIFO32 *mousefifo;

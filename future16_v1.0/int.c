@@ -1,3 +1,5 @@
+/* ÷–∂œœ‡πÿ */
+
 #include "bootpack.h"
 #include <stdio.h>
 

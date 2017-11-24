@@ -1,3 +1,5 @@
+/* 图形处理相关 */
+
 #include "graphic.h"
 #include "naskfunc.h"
 

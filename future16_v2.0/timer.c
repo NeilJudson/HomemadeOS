@@ -1,3 +1,5 @@
+/*  ±÷”œ‡πÿ */
+
 #include "timer.h"
 #include "naskfunc.h"
 #include "int.h"

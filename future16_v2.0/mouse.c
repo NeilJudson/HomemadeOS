@@ -1,3 +1,5 @@
+/* ส๓ฑ๊ฯเนุ */
+
 #include "mouse.h"
 #include "naskfunc.h"
 #include "fifo.h"

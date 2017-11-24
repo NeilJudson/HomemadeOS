@@ -1,3 +1,5 @@
+/* GDT°¢IDT°¢descriptor tableµ»œ‡πÿ */
+
 #include "dsctbl.h"
 #include "naskfunc.h"
 

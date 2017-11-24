@@ -1,3 +1,5 @@
+/* ฤฺดๆฯเนุ */
+
 #include "memory.h"
 #include "naskfunc.h"
 

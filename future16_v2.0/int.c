@@ -1,3 +1,5 @@
+/* ÖĞ¶ÏÏà¹Ø */
+
 #include <stdio.h>
 #include "int.h"
 #include "naskfunc.h"

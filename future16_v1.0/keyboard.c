@@ -1,3 +1,5 @@
+/* ผüลฬฯเนุ */
+
 #include "bootpack.h"
 
 struct FIFO32 *keyfifo;

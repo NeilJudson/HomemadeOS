@@ -1,3 +1,5 @@
+/* 鼠标和窗口的重合处理 */
+
 #include "sheet.h"
 
 #define SHEET_USE		1										// 表示sheet正在使用的值常量
