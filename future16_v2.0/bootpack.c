@@ -436,12 +436,14 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	int x, y;
 	struct FILEINFO *finfo = (struct FILEINFO *) (ADR_DISKIMG + 0x002600);
+	int *fat = (int *) memman_alloc_4k(memman, 4 * 2880);
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 	
 	timer = timer_alloc();
 	timer_init(timer, &task->fifo, 1);
 	timer_settime(timer, 50);
+	file_readfat(fat, (unsigned char *) (ADR_DISKIMG + 0x000200)); // 将FAT展开到fat中
 
 	/* 显示提示符 */
 	putfonts8_asc_sht(sheet, 8, 28, COL8_FFFFFF, COL8_000000, ">", 1);
@@ -567,12 +569,12 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 						}
 						if (x < 224 && finfo[x].name[0] != 0x00) {
 							/* 找到文件的情况 */
-							y = finfo[x].size;
-							p = (char *) (finfo[x].clustno * 512 + 0x003e00 + ADR_DISKIMG);
+							p = (char *) memman_alloc_4k(memman, finfo[x].size);
+							file_loadfile(finfo[x].clustno, finfo[x].size, p, fat, (char *) (ADR_DISKIMG + 0x003e00));
 							cursor_x = 8;
-							for (x = 0; x < y; x++) {
+							for (y = 0; y < finfo[x].size; y++) {
 								/* 逐字输出 */
-								s[0] = p[x];
+								s[0] = p[y];
 								s[1] = 0;
 								if (s[0] == 0x09) {             /* 制表符 */
 									for (;;) {
@@ -600,6 +602,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 									}
 								}
 							}
+							memman_free_4k(memman, (int) p, finfo[x].size);
 						} else {
 							/* 没有找到文件的情况 */
 							putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "File not found.", 15);
@@ -656,4 +659,40 @@ int cons_newline(int cursor_y, struct SHEET *sheet)
 		sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
 	}
 	return cursor_y;
+}
+
+void file_readfat(int *fat, unsigned char *img)
+{
+	/*
+	* 将磁盘映像中的FAT解压缩
+	* fat: 解压缩后的存放地址
+	* img: 磁盘映像的FAT在内存中的存放地址
+	*/
+	int i, j = 0;
+	for (i = 0; i < 2880; i += 2) {
+		fat[i + 0] = (img[j + 0]      | img[j + 1] << 8) & 0xfff;
+		fat[i + 1] = (img[j + 1] >> 4 | img[j + 2] << 4) & 0xfff;
+		j += 3;
+	}
+	return;
+}
+
+void file_loadfile(int clustno, int size, char *buf, int *fat, char *img)
+{
+	int i;
+	for (;;) {
+		if (size <= 512) {
+			for (i = 0; i < size; i++) {
+				buf[i] = img[clustno * 512 + i];
+			}
+			break;
+		}
+		for (i = 0; i < 512; i++) {
+			buf[i] = img[clustno * 512 + i];
+		}
+		size -= 512;
+		buf += 512;
+		clustno = fat[clustno];                                 // 似乎一种链表结构
+	}
+	return;
 }

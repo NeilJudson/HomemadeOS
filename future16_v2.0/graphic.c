@@ -83,8 +83,8 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font)
 	/*
 	* 写入字符
 	* 内存vram的[(x,y),(x+7,y+15)]区域
-	* c:	字符颜色
-	* font:	字符
+	* c:    字符颜色
+	* font: 字符
 	*/
 	int i;
 	char *p, d /* data */;
