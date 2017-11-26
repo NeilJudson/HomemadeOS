@@ -6,7 +6,7 @@ void file_readfat(int *fat, unsigned char *img)
 {
 	/*
 	* 将磁盘映像中的FAT解压缩
-	* fat: 解压缩后的存放地址
+	* fat: 解压缩后的FAT的存放地址
 	* img: 磁盘映像的FAT在内存中的存放地址
 	*/
 	int i, j = 0;
@@ -20,6 +20,13 @@ void file_readfat(int *fat, unsigned char *img)
 
 void file_loadfile(int clustno, int size, char *buf, int *fat, char *img)
 {
+	/*
+	* 将磁盘映像中的文件加载到buf中
+	* clustno:  文件所在扇区号
+	* size:     文件大小
+	* fat:      解压缩后的FAT的存放地址
+	* img:      磁盘映像总文件在内存中的存放地址
+	*/
 	int i;
 	for (;;) {
 		if (size <= 512) {
