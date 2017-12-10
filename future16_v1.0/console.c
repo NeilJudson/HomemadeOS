@@ -217,7 +217,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 							/* 找到文件的情况 */
 							p = (char *) memman_alloc_4k(memman, finfo[x].size);
 							file_loadfile(finfo[x].clustno, finfo[x].size, p, fat, (char *) (ADR_DISKIMG + 0x003e00));
-							set_segmdesc(gdt + 1003, finfo[x].size - 1, (int) p, AR_CODE32_ER);
+							set_segmdesc(gdt + 1003, finfo[x].size - 1, (int) p, AR_CODE32_ER); // hlt.hrb成功读入内存之后，将其注册为GDT的1003号。1-2号有dsctbl.c使用，3-1002号由mtask.c使用。
 							farjmp(0, 1003 * 8);
 							memman_free_4k(memman, (int) p, finfo[x].size);
 						} else {

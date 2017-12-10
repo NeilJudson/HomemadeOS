@@ -17,9 +17,11 @@
 		GLOBAL	_asm_inthandler20, _asm_inthandler21
 		GLOBAL	_asm_inthandler27, _asm_inthandler2c
 		GLOBAL	_memtest_sub
-		GLOBAL	_farjmp
+		GLOBAL	_farjmp, _farcall
+		GLOBAL	_asm_cons_putchar
 		EXTERN	_inthandler20, _inthandler21
 		EXTERN	_inthandler27, _inthandler2c
+		EXTERN	_cons_putchar
 
 [SECTION .text]									; 目标文件中写了这些之后再写程序
 
@@ -232,6 +234,20 @@ mts_fin:
 ;===============================================================
 ;
 ;===============================================================
-_farjmp:										; void farjmp(int eip, int cs);
+_farjmp:                                        ; void farjmp(int eip, int cs);
 		JMP		FAR	[ESP+4]						; 从指定内存中读取4个字节数据存入eip寄存器，再继续读取2个字节数据存入cs寄存器
 		RET
+
+_farcall:                                       ; void farcall(int eip, int cs);
+		CALL	FAR	[ESP+4]                     ; eip, cs
+		RET
+
+_asm_cons_putchar:
+		PUSH	1
+		AND		EAX,0xff                        ; 将AH和EAX的高位置0，将EAX置为已存入字符编码的状态
+		PUSH	EAX
+		PUSH	DWORD [0x0fec]                  ; 读取内存并PUSH该值
+		CALL	_cons_putchar
+		ADD		ESP,12                          ; 将栈中的数据丢弃
+		RETF
+

@@ -25,6 +25,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 	struct CONSOLE      cons = {sheet, 8, 28, -1};
 	int                 i;
 	char                cmdline[30];
+	*((int *) 0x0fec) = (int) &cons;
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 	
@@ -278,8 +279,8 @@ void cmd_hlt(struct CONSOLE *cons, int *fat)
 		/* 找到文件的情况 */
 		p = (char *) memman_alloc_4k(memman, finfo->size);
 		file_loadfile(finfo->clustno, finfo->size, p, fat, (char *) (ADR_DISKIMG + 0x003e00));
-		set_segmdesc(gdt + 1003, finfo->size - 1, (int) p, AR_CODE32_ER);
-		farjmp(0, 1003 * 8);
+		set_segmdesc(gdt + 1003, finfo->size - 1, (int) p, AR_CODE32_ER); // hlt.hrb成功读入内存之后，将其注册为GDT的1003号。1-2号有dsctbl.c使用，3-1002号由mtask.c使用。
+		farcall(0, 1003 * 8);
 		memman_free_4k(memman, (int) p, finfo->size);
 	} else {
 		/* 没有找到文件的情况 */
