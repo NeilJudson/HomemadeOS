@@ -199,7 +199,7 @@ _asm_inthandler2c:
 ;
 ;===============================================================
 _memtest_sub:									; unsigned int memtest_sub(unsigned int start, unsigned int end)
-		PUSH	EDI
+		PUSH	EDI                             ; £¨EBX, ESI, EDI ¤âÊ¹¤¤¤¿¤¤¤Î¤Ç£©
 		PUSH	ESI
 		PUSH	EBX
 		MOV		ESI,0xaa55aa55					; pat0 = 0xaa55aa55;

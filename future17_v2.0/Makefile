@@ -46,19 +46,19 @@ bootpack.bim : $(OBJS_BOOTPACK) Makefile
 bootpack.hrb : bootpack.bim Makefile
 	$(BIM2HRB) bootpack.bim bootpack.hrb 0
 
-hlt.fex : hlt.nas Makefile
-	$(NASK) hlt.nas hlt.fex hlt.lst
+hello.fex : hello.nas Makefile
+	$(NASK) hello.nas hello.fex hello.lst
 
 future.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb future.sys
 
-future.img : ipl.bin future.sys hlt.fex Makefile
+future.img : ipl.bin future.sys hello.fex Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:ipl.bin len:512 from:0 to:0 \
 		copy from:future.sys to:@: \
 		copy from:ipl.nas to:@: \
 		copy from:make.bat to:@: \
-		copy from:hlt.fex to:@: \
+		copy from:hello.fex to:@: \
 		imgout:future.img
 
 # “ª∞„πÊ‘Ú
