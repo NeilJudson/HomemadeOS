@@ -27,7 +27,7 @@ void init_gdtidt(void)
 	set_gatedesc(idt + 0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32); // 表示asm_inthandler21属于那一段，即段号是2，低3位有别的作用，必须为0
 	set_gatedesc(idt + 0x27, (int) asm_inthandler27, 2 * 8, AR_INTGATE32); // AR_INTGATE32 = 0x008e，表示这是用于中断处理的有效设定
 	set_gatedesc(idt + 0x2c, (int) asm_inthandler2c, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt + 0x40, (int) asm_cons_putchar, 2 * 8, AR_INTGATE32); // 0x30-0xff都是空闲的
+	set_gatedesc(idt + 0x40, (int)      asm_fex_api, 2 * 8, AR_INTGATE32); // 0x30-0xff都是空闲的
 
 	return;
 }
