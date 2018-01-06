@@ -12,4 +12,4 @@ putloop:
 fin:
 		RETF
 msg:
-		DB	"hello",0
+		DB      "hello",0

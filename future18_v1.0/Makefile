@@ -43,8 +43,11 @@ bootpack.bim : $(OBJS_BOOTPACK) Makefile
 		$(OBJS_BOOTPACK)
 # 3MB+64KB=3136KB
 
-bootpack.hrb : bootpack.bim Makefile
-	$(BIM2HRB) bootpack.bim bootpack.hrb 0
+bootpack.fex : bootpack.bim Makefile
+	$(BIM2HRB) bootpack.bim bootpack.fex 0
+
+future.sys : asmhead.bin bootpack.fex Makefile
+	copy /B asmhead.bin+bootpack.fex future.sys
 
 hello.fex : hello.nas Makefile
 	$(NASK) hello.nas hello.fex hello.lst
@@ -52,10 +55,20 @@ hello.fex : hello.nas Makefile
 hello2.fex : hello2.nas Makefile
 	$(NASK) hello2.nas hello2.fex hello2.lst
 
-future.sys : asmhead.bin bootpack.hrb Makefile
-	copy /B asmhead.bin+bootpack.hrb future.sys
+a.bim : a.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:a.bim map:a.map a.obj a_nask.obj
 
-future.img : ipl.bin future.sys hello.fex hello2.fex Makefile
+a.fex : a.bim Makefile
+	$(BIM2HRB) a.bim a.fex 0
+
+hello3.bim : hello3.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:hello3.bim map:hello3.map hello3.obj a_nask.obj
+
+hello3.fex : hello3.bim Makefile
+	$(BIM2HRB) hello3.bim hello3.fex 0
+
+future.img : ipl.bin future.sys Makefile \
+		hello.fex hello2.fex a.fex hello3.fex
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:ipl.bin len:512 from:0 to:0 \
 		copy from:future.sys to:@: \
@@ -63,6 +76,8 @@ future.img : ipl.bin future.sys hello.fex hello2.fex Makefile
 		copy from:make.bat to:@: \
 		copy from:hello.fex to:@: \
 		copy from:hello2.fex to:@: \
+		copy from:a.fex to:@: \
+		copy from:hello3.fex to:@: \
 		imgout:future.img
 
 # “ª∞„πÊ‘Ú
@@ -95,12 +110,11 @@ clean :
 	-$(DEL) *.bin
 	-$(DEL) *.lst
 	-$(DEL) *.obj
-	-$(DEL) bootpack.map
-	-$(DEL) bootpack.bim
-	-$(DEL) bootpack.hrb
+	-$(DEL) *.map
+	-$(DEL) *.bim
+	-$(DEL) *.fex
 	-$(DEL) future.sys
 
 src_only :
 	$(MAKE) clean
 	-$(DEL) future.img
-	-$(DEL) *.fex
